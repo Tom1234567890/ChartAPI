@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+
+<html>
+	<head>
+	<title>Deaths per Capita in the UK.</title>
+		<script type="text/javascript" src="SeriesChartApi.js"></script>
+	</head>
+	<body>
+		<canvas id="body" width="200" height="200"></canvas>
+		<script>
+			var settings =
+				{
+					Title:
+					{
+						text: "Deaths per Capita in the UK.",
+						font: "TimesNewRoman",
+						background: "#FFFFFF",
+						truncation: 3
+					},
+					ChartArea:
+					{
+						canvasBackground: "#9ECAE1",
+						background: "#F0F0F0",
+						altBackground: "#FFFFFF",
+						truncation: 3,
+						yAxisDividers: 5
+					}
+				}
+			var data = 
+				{
+					Value:
+						[
+							1,2,3,4,5,6,7,8,9,0
+						],
+					Category:
+						[
+							2012, 2013
+						]
+				}
+			var body = /*document.getElementById("body"); //*/document.body;
+			var charts = new ChartApi(body, settings, data);
+			charts.Render();
+		</script>
+	</body>
+</html>
