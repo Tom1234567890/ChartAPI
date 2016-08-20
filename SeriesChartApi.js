@@ -1,4 +1,5 @@
 ﻿function ChartApi(p_element, p_settings, p_data) {
+
 	// Global Variables with Defaults
 	var g_sizeX = 500;
 	var g_sizeY = 500;
@@ -7,45 +8,56 @@
 	var g_data = null;
 	var g_lowerLimit = null;
 	var g_upperLimit = null;
+
 	// Create Global Elements
-	try
-	{
-		if (p_element.tagName.toLowerCase() == "canvas")
-		{
+	var g_canvas;
+	try {
+		if (p_element.tagName.toLowerCase() == "svg") {
 			// Client has created the correct element
 			g_canvas = p_element;
-			// set default Width & Height
-			g_sizeX = g_canvas.width;
+			// Get Width & Height
 			g_sizeY = g_canvas.height;
+			g_sizeX = g_canvas.width;
 		}
-		else
-		{
+		else {
 			// Generate the element as a child
-			var g_canvas = document.createElement("canvas");
-			if (g_canvas == undefined)
-			{
+			g_canvas = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+			if (g_canvas == undefined || g_canvas == null) {
 				throw Error("Unable to generate canvas element");
 			}
-			var g_canvas = p_element.appendChild(g_canvas);
+			// Set Height
+			g_canvas.setAttributeNS(null, "viewBox", "0 0 " + g_sizeX + " " + g_sizeY);
+			g_canvas.setAttributeNS(null, "width", g_sizeX);
+			g_canvas.setAttributeNS(null, "height", g_sizeY);
+			// Add to document
+			p_element.appendChild(g_canvas);
 		}
-		// Get the context
-		var g_context = g_canvas.getContext("2d");
 	}
 	catch (ex) {
+		// Error Silently
 		console.log("Error Creating Chart Object: " + ex);
 		return;
 	}
-	// Input Objects
+
+
+	// #### Input Objects ####
+
 	var g_title =
 		{
+			// This reference is for the text directly, unlike the other references for the parent element.
+			reference: null,
 			text: "",
 			font: "TimesNewRoman",
 			background: "#FFFFFF",
 			fontSize: 0,
-			y: "0px"
+			minX: 0,
+			minY: 0,
+			maxX: 0,
+			maxY: 0
 		}
 	var g_chartArea =
 		{
+			reference: null,
 			canvasBackground: "#FFFFFF",
 			background: "#FFFFFF",
 			altBackground: null,
@@ -58,6 +70,7 @@
 		}
 	var g_yAxis =
 		{
+			reference: null,
 			fontSize: 0,
 			font: "TimesNewRoman",
 			background: "#FFFFFF",
@@ -69,6 +82,7 @@
 		}
 	var g_xAxis =
 		{
+			reference: null,
 			fontSize: 0,
 			font: "TimesNewRoman",
 			background: "#FFFFFF",
@@ -81,6 +95,50 @@
 	// Optional Input
 	var g_logo;
 	var g_legend;
+
+
+	// #### Helper Functions ####
+
+	function Rect(p_minX, p_minY, p_maxX, p_maxY, p_background, p_lineColor) {
+		if (p_background == "Transparent") p_background = null;
+		if (p_lineColor == "Transparent") p_background = null;
+		if (p_lineColor == null && p_background == null) return;
+
+		var rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+		rect.setAttribute('x', p_minX + '%');
+		rect.setAttribute('y', p_minY + '%');
+		rect.setAttribute('width', p_maxX + '%');
+		rect.setAttribute('height', p_maxY + '%');
+		if (p_background != null) {
+			rect.setAttribute('fill', p_background);
+		}
+		else {
+			rect.setAttribute('fill-opacity', 0);
+		}
+		if (p_lineColor != null) {
+			rect.setAttribute('stroke-width', '0.25%');
+			rect.setAttribute('stroke', p_lineColor);
+		}
+		// Return a reference of the element.
+		return g_canvas.appendChild(rect);
+	}
+
+	function Line(p_x1, p_y1, p_x2, p_y2, p_lineColor) {
+		if (p_lineColor == "Transparent") p_background = null;
+		if (p_lineColor == null) return;
+
+		var line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+		line.setAttribute('x1', p_x1 + '%');
+		line.setAttribute('y1', p_y1 + '%');
+		line.setAttribute('x2', p_x2 + '%');
+		line.setAttribute('y2', p_y2 + '%');
+		line.setAttribute('stroke-width', '0.25%');
+		line.setAttribute('stroke', p_lineColor);
+		g_canvas.appendChild(line);
+	}
+
+	// #### High level functions ####
+
 
 	function LoadChartData() {
 		if (g_data == null) {
@@ -100,16 +158,15 @@
 					category: p_data.Category
 				}
 		}
-		else
-		{
+		else {
 			// TODO: Ajax?
 		}
 	}
 
-	function LoadSettings()
-	{
-		if (p_settings.Title != undefined)
-		{
+	// Load in details from the input object
+	function LoadSettings() {
+		console.log("Receiving Settings:");
+		if (p_settings.Title != undefined) {
 			console.log("Title Received");
 			if (p_settings.Title.text != undefined) g_title.text = p_settings.Title.text;
 			if (p_settings.Title.font != undefined) g_title.font = p_settings.Title.font;
@@ -123,9 +180,8 @@
 			if (p_settings.ChartArea.yAxisDividers != undefined) g_chartArea.yAxisDividers = p_settings.ChartArea.yAxisDividers + 1;
 			if (p_settings.ChartArea.truncation != undefined) g_chartArea.truncation = p_settings.ChartArea.truncation;
 		}
-		if (p_settings.Legend != undefined)
-		{
-			console.log("ChartArea Received");
+		if (p_settings.Legend != undefined) {
+			console.log("Legend Received");
 			g_legend =
 				{
 					font: p_settings.Legend.font != undefined ? p_settings.Legend.font : "TimesNewRoman",
@@ -140,269 +196,108 @@
 		}
 	}
 
-	function SizeChart() {
-		// #### Chart ####
-		// Chart Border
-		g_sizeX -= Math.floor(g_sizeX / 100);
-		g_sizeY -= Math.floor(g_sizeX / 100);
-		g_size = g_sizeX >= g_sizeY ? g_sizeY : g_sizeX;
-		g_canvas.style.border = 'black ' + Math.ceil(g_size / 200) + 'px solid';
-		// Chart Canvas
-		g_canvas.width = g_sizeX;
-		g_canvas.height = g_sizeY;
-		// Margin Between elements
-		g_margin = Math.floor(g_sizeX / 100);
-
-		// #### Title ####
-		// Title Y // Add 0.5 for correct aliasing.
-		g_title.y = Math.floor(g_sizeY / 7) + 0.5;
-		// Title Font Size
-		g_title.fontSize = Math.floor(g_size / 13) + "px";
-
-		// #### Chart Area #### 
-		// Chart Area Dimensions - Add 0.5 for correct aliasing.
-		g_chartArea.minX = Math.floor(g_sizeX / 6) + 0.5;
-		g_chartArea.minY = Math.floor(g_sizeY / 6) + 0.5;
-		g_chartArea.maxX = Math.floor(2 * g_sizeX / 3); // 2/3 of the canvas
-		g_chartArea.maxY = Math.floor(2 * g_sizeY / 3);
-
-		// #### Legend ####
-		if (g_legend != undefined) {
-			// Legend Dimensions
-			g_legend.minX = (g_chartArea.minX + g_chartArea.maxX) + g_margin;
-			g_legend.minY = g_chartArea.minY; // Same as Chart Area
-			g_legend.maxX = 0.5 + g_sizeX - (g_margin + g_legend.minX); // Distance between the edge & the start point
-			g_legend.maxY = g_chartArea.maxY;
-		}
-		else {
-			// Adjust spacing to take up where it would be drawn
-			g_chartArea.maxX = 0.5 + g_sizeX - (g_margin + g_chartArea.minX); // Distance between the edge & the start point
-		}
-
+	function SizeChart()
+	{
 		// #### XAxis ####
-		// XAxis Font Size
-		g_xAxis.fontSize = Math.floor(g_size / 30) + "px";
-		// XAxis Dimensions
-		g_xAxis.minX = g_chartArea.minX; // Same as Chart Area
-		g_xAxis.minY = g_chartArea.minY + g_chartArea.maxY + g_margin; // From bottom of the Chart
-		g_xAxis.maxX = g_chartArea.maxX; // Same as Chart Area
-		g_xAxis.maxY = 0.5 + g_sizeY - (g_margin + g_xAxis.minY); // Distance between the edge & the start point
+		g_xAxis.minX = 20;
+		g_xAxis.minY = 80;
+		g_xAxis.maxX = 60;
+		g_xAxis.maxY = 20;
+		if (g_legend == undefined)
+		{
+			g_xAxis.maxX += 20;
+		}
 	}
 
 	function DrawChartAreas() {
-		// Canvas Background Color
-		if (g_chartArea.canvasBackground != "Transparent")
-		{
-			g_context.fillStyle = g_chartArea.canvasBackground;
-			g_context.fillRect(0, 0, g_sizeX, g_sizeY);
-		}
-
-		// ##### Title ####
-		// Title Background
-		if (g_title.background != "Transparent")
-		{
-			g_context.fillStyle = g_title.background;
-			g_context.fillRect(0, 0, g_sizeX, g_title.y);
-		}
-		// Title Font
-		g_context.moveTo(0, 0);
-		g_context.fillStyle = "black";
-		g_context.font = g_title.fontSize + ' ' + g_title.font;
-		g_context.textAlign = "center";
-		g_context.fillText(g_title.text, g_sizeX / 2, g_title.y / 2);
-
-		// #### Chart ####
-		// Chart Area
-		if (g_chartArea.background != "Transparent")
-		{
-			g_context.fillStyle = g_chartArea.background;
-			g_context.fillRect(g_chartArea.minX, g_chartArea.minY, g_chartArea.maxX, g_chartArea.maxY);
-		}
-
-		// #### XAxis ####
-		// XAxis Area
-		g_context.fillStyle = g_xAxis.background;
-		g_context.fillRect(g_xAxis.minX, g_xAxis.minY, g_xAxis.maxX, g_xAxis.maxY);
-		if (g_xAxis.titleBackground != null) {
-			g_context.fillStyle = g_xAxis.titleBackground;
-			g_context.fillRect(g_xAxis.minX, g_xAxis.minY, g_xAxis.maxX, g_xAxis.maxY / 2);
-		}
-
-		// #### Legend ####
-		if (g_legend != undefined) {
-			// Legend Area
-			g_context.fillStyle = g_legend.background;
-			g_context.fillRect(g_legend.minX, g_legend.minY, g_legend.maxX, g_legend.maxY);
-			if (g_legend.titleBackground != null) {
-				g_context.fillStyle = g_legend.titleBackground;
-				g_context.fillRect(g_legend.minX, g_legend.minY, g_legend.maxX, g_legend.maxY / 10);
-			}
-		}
+		// General Setup
+		// Currently used for the background & Title.
+		// NOT for anything that could potentially need refreshing.
+		// #### Background ####
+		Rect(0, 0, 100, 100, g_chartArea.canvasBackground, "#000");
+		// #### Title ####
+		Rect(0, 0, 100, 20, g_title.background, "#000");
 	}
 
-	function DrawChartLines() {
-		// ##### Title ####
-		// Title Underline
-		g_context.moveTo(0, g_title.y);
-		g_context.lineTo(g_sizeX, g_title.y);
-		g_context.stroke();
-
-		// #### Chart ####
-		// Chart Outline
-		g_context.rect(g_chartArea.minX, g_chartArea.minY, g_chartArea.maxX, g_chartArea.maxY);
-		g_context.stroke();
-
-		// #### XAxis ####
-		// XAxis Outline
-		g_context.rect(g_xAxis.minX, g_xAxis.minY, g_xAxis.maxX, g_xAxis.maxY);
-		g_context.stroke();
-		// XAxis Divider
-		g_context.moveTo(g_xAxis.minX, g_xAxis.minY + Math.floor(g_xAxis.maxY / 2));
-		g_context.lineTo(g_xAxis.minX + g_xAxis.maxX, g_xAxis.minY + Math.floor(g_xAxis.maxY / 2));
-		g_context.stroke();
-
-		// #### Legend ####
-		if (g_legend != undefined) {
-			// Legend Outline
-			g_context.rect(g_legend.minX, g_legend.minY, g_legend.maxX, g_legend.maxY);
-			g_context.stroke();
-			// Legend Divider
-			g_context.moveTo(g_legend.minX, g_legend.minY + Math.floor(g_legend.maxY / 10));
-			g_context.lineTo(g_legend.minX + g_legend.maxX, g_legend.minY + Math.floor(g_legend.maxY / 10));
-			g_context.stroke();
-		}
-	}
-
-	function SetupYAxis()
-	{
-		// Workings variables
-		var truncationValue ;
-		var yAxisValues = {};
-		// #### YAxis ####
-		// YAxis Font Size
-		g_yAxis.fontSize = Math.floor(g_size / 30) + "px";
-		// YAxis Dimensions
-		g_yAxis.minX = g_margin + 0.5;
-		g_yAxis.minY = g_chartArea.minY; // Same as Chart Area
-		g_yAxis.maxX = g_chartArea.minX - (g_margin + g_yAxis.minX); // Distance between Chart Area's & start point
-		g_yAxis.maxY = g_chartArea.maxY; // Same as Chart Area
-		// YAxis Upper & Lower values
-		g_upperLimit = g_lowerLimit = g_data.value[0]; // Reset to somthing we know is within the range.
-		
-		for (var i = 0; i < g_data.value.length; i++)
-		{
-			if (g_lowerLimit > g_data.value[i])
-			{
-				g_lowerLimit = g_data.value[i];
-			}
-			if (g_upperLimit < g_data.value[i])
-			{
-				g_upperLimit = g_data.value[i];
-			}
-		}
-		// YAxis Difference
-		// YValue value difference between values
-		var yDividerDifference = (g_upperLimit - g_lowerLimit) / g_chartArea.yAxisDividers;
-		// YAxis Values
-		for (var i = 0; i <= g_chartArea.yAxisDividers; i++)
-		{
-			yAxisValues[i] = g_upperLimit - (i * yDividerDifference);
-		}
-		// YAxis Truncation
-		if (g_chartArea.truncation != undefined && g_chartArea.truncation > 0)
-		{
-			// Trunciate based on the lower limit.
-			truncationValue = g_lowerLimit.toString().split("").length - g_chartArea.truncation;
-			// Get the value as a power of 10.
-			truncationValue = Math.pow(10, truncationValue);
-
-			for (var i = 0; i < g_chartArea.yAxisDividers; i++) {
-				yAxisValues[i] = Math.ceil(yAxisValues[i] / truncationValue) * truncationValue;
-			}
-
-			g_lowerLimit = Math.floor(g_lowerLimit / truncationValue) * truncationValue;
-			g_upperLimit = Math.ceil(g_upperLimit / truncationValue) * truncationValue;
-		}
-	}
-
-	function DrawYAxis()
-	{
+	function DrawYAxis() {
 		// #### YAxis ####
 		// YAxis Area
-		g_context.fillStyle = g_yAxis.background;
-		g_context.fillRect(g_yAxis.minX, g_yAxis.minY, g_yAxis.maxX, g_yAxis.maxY);
-		if (g_yAxis.titleBackground != null) {
-			g_context.fillStyle = g_yAxis.titleBackground;
-			g_context.fillRect(g_yAxis.minX, g_yAxis.minY, g_yAxis.maxX / 2, g_yAxis.maxY);
-		}
-		// YAxis Value Area
-		for (i = 0; i <= g_chartArea.yAxisDividers; i++) {
-			// Value Area
-			g_context.fillStyle = "#ff9900";
-			g_context.fillRect(g_yAxis.minX + (g_yAxis.maxX / 2), g_yAxis.minY, g_yAxis.maxX / 2, (g_yAxis.maxY / g_chartArea.yAxisDividers) * i);
-			// Value Underline
-			g_context.moveTo(g_yAxis.minX + (g_yAxis.maxX / 2), g_yAxis.minY + ((g_yAxis.maxY / g_chartArea.yAxisDividers) * i));
-			g_context.lineTo(g_yAxis.minX + g_yAxis.maxX, g_yAxis.minY + ((g_yAxis.maxY / g_chartArea.yAxisDividers) * i));
-			g_context.stroke();
-		}
-		// YAxis Outline
-		g_context.rect(g_yAxis.minX, g_yAxis.minY, g_yAxis.maxX, g_yAxis.maxY);
-		g_context.stroke();
-		// YAxis Vertical Divider
-		g_context.moveTo(g_yAxis.minX + (g_yAxis.maxX / 2), g_yAxis.minY);
-		g_context.lineTo(g_yAxis.minX + (g_yAxis.maxX / 2), g_yAxis.minY + g_yAxis.maxY);
-		g_context.stroke();
+		g_yAxis =
+            Rect(0, 20, 20, 60, g_yAxis.background, "#000");
+		// YAxis Alt Background
+		Rect(0, 20, 10, 60, g_yAxis.titleBackground, "#000");
 	}
 
-	function DrawXAxis()
-	{
-
+	function DrawXAxis() {
+		// XAxis Area
+		g_xAxis =
+            Rect(g_xAxis.minX, g_xAxis.minY, g_xAxis.maxX, g_xAxis.maxY, g_xAxis.background, "#000");
+		// XAxis Alt Background
+		Rect(g_xAxis.minX, g_xAxis.minY, g_xAxis.maxX, g_xAxis.maxY / 2, g_xAxis.titleBackground, "#000");
 	}
 
-	function DrawData()
-	{
-		for(var i = 0; i < p_data.length; i++)
-		{
-
-		}
+	function DrawLegend() {
+		// #### Legend ####
+		if (g_legend == undefined) return false;
+		// Legend Area
+		g_legend.reference =
+            Rect(80, 20, 20, 80, g_legend.background, "#000");
+		// Legend Alt Background
+		Rect(80, 20, 20, 10, g_legend.titleBackground, "#000");
+		return true
 	}
 
-	// Public Functions
+	function DrawChart() {
+		// Chart Area
+		g_chartArea =
+            Rect(minX, minY, maxX, maxY, g_chartArea.background, "#000");
+	}
+
+	// #### Public Functions ####
+
 	this.Render = function () {
-		console.log("Rendering Chart");
-		try
-		{
+		console.log("#### Rendering Chart ####");
+		try {
+			if (g_canvas == null || g_canvas == undefined) {
+				console.log("Unable to create chart - no parent element");
+			}
 			// Order in which the chart is rendered:
 			LoadChartData();
 			LoadSettings();
+			//SizeChart();
+			console.log("#### Drawing Chart ####");
 			SizeChart();
-			SetupYAxis();
 			DrawChartAreas();
-			DrawChartLines();
 			DrawYAxis();
 			DrawXAxis();
-			DrawData();
-			console.log("Render Complete");
+			if (DrawLegend()) console.log("Legend Rendered");
+			console.log("#### Render Complete ####");
 			return true;
 		}
-		catch(ex)
-		{
+		catch (ex) {
 			console.log("Stopped Rendering due to exception:")
 			console.log(ex);
-			if (g_canvas != null && g_canvas != undefined)
-			{
+			if (g_canvas != null && g_canvas != undefined) {
 				console.log("Removing Canvas");
-				g_canvas.remove;
+				this.Remove(true);
 			}
-			if (g_context != null && g_context != undefined)
-			{
-				g_context.remove;
-			}
+		}
+		finally {
+			this.Remove;
 			return false;
 		}
-		finally
-		{
-			this.remove;
+	}
+
+	this.Remove = function (p_keepParent) {
+		console.log("Removing Chart");
+
+		if (p_keepParent) {
+			while (g_canvas.hasChildNodes()) {
+				g_canvas.removeChild(g_canvas.lastChild);
+			}
+		}
+		else {
+			g_canvas.remove();
 		}
 	}
 }

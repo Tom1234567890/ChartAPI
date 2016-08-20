@@ -1,12 +1,14 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 
 <html>
 	<head>
 	<title>Deaths per Capita in the UK.</title>
 		<script type="text/javascript" src="SeriesChartApi.js"></script>
+
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 	</head>
 	<body>
-		<canvas id="body" width="200" height="200"></canvas>
+		<svg id="body" width="500" height="500"></svg>
 		<script>
 			var settings =
 				{
@@ -34,12 +36,13 @@
 						],
 					Category:
 						[
-							2012, 2013
+							2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021
 						]
 				}
-			var body = /*document.getElementById("body"); //*/document.body;
+			var body = document.getElementById("body"); //*/document.body;
 			var charts = new ChartApi(body, settings, data);
 			charts.Render();
+			// charts.Remove(true);
 		</script>
 	</body>
 </html>
