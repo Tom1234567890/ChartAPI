@@ -1,48 +1,63 @@
 ﻿<!DOCTYPE html>
 
 <html>
-	<head>
+<head>
 	<title>Deaths per Capita in the UK.</title>
-		<script type="text/javascript" src="SeriesChartApi.js"></script>
+	<script type="text/javascript" src="SeriesChartApi.js"></script>
 
-		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-	</head>
-	<body>
-		<svg id="body" width="500" height="500"></svg>
-		<script>
-			var settings =
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+</head>
+<body>
+	<svg id="body" width="500" height="500"></svg>
+	<script>
+		var settings =
+			{
+				Title:
 				{
-					Title:
-					{
-						text: "Deaths per Capita in the UK.",
-						font: "TimesNewRoman",
-						background: "#FFFFFF",
-						truncation: 3
-					},
-					ChartArea:
-					{
-						canvasBackground: "#9ECAE1",
-						background: "#F0F0F0",
-						altBackground: "#FFFFFF",
-						truncation: 3,
-						yAxisDividers: 5
-					}
-				}
-			var data = 
+					text: "Deaths per Capita in the UK.",
+					font: "TimesNewRoman",
+					background: "#FFFFFF",
+					truncation: 3
+				},
+				ChartArea:
 				{
-					Value:
-						[
-							1,2,3,4,5,6,7,8,9,0
-						],
-					Category:
-						[
-							2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021
-						]
+					canvasBackground: "#9ECAE1",
+					background: "#F0F0F0",
+					altBackground: "#FFFFFF",
+					truncation: 3,
+					yAxisDividers: 5
 				}
-			var body = document.getElementById("body"); //*/document.body;
-			var charts = new ChartApi(body, settings, data);
-			charts.Render();
-			// charts.Remove(true);
-		</script>
-	</body>
+				
+				,
+				Legend:
+					{
+						background: "Transparent"
+					}//*/
+			}
+		var data =
+			{
+				Value:
+					[
+						1, 2, 3, 4, 5, 6, 7, 8, 9, 0
+					],
+				Category:
+					[
+						2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022
+					]
+			}
+		var body = document.getElementById("body"); //*/document.body;
+		var charts = new SeriesChartApi(body, settings, data);
+
+		try {
+			if (!charts.Render()) {
+				alert("Err0r");
+			}
+		}
+		catch (err) {
+			alert("Uncaught Error :" + err.message);
+		}
+
+		// charts.Remove(true);
+	</script>
+</body>
 </html>
