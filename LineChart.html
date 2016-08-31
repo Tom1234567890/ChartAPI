@@ -7,17 +7,17 @@
 
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 </head>
-<body>
+<body style="margin:0px;">
 	<svg id="body" width="500" height="500"></svg>
 	<script>
 		var settings =
 			{
+				
 				Title:
 				{
-					text: "Deaths per Capita in the UK.",
-					font: "TimesNewRoman",
-					background: "#FFFFFF",
-					truncation: 3
+					text: "Cumulative Months in Year",
+					font: "ArielNarrow",
+					background: "#FFFFFF"
 				},
 				ChartArea:
 				{
@@ -25,36 +25,59 @@
 					background: "#F0F0F0",
 					altBackground: "#FFFFFF",
 					truncation: 3,
-					yAxisDividers: 5
-				}
-				
+					yAxisDividers: 5,
+					color: ["blue"]
+				},
+				YAxis:
+					{
+						spokeColor: "Transparent",
+						text: "Cumulative Months",
+						// fontSize: 10,
+						// baseFontSize: 5,
+						max: 12,
+						min: 0,
+						font: "ComicSans",
+						background: "#FFFFFF",
+						titleBackground: "#ff9900"
+					},
+				XAxis:
+					{
+						spokeColor: "grey",
+						text: "Month of Year",
+						// fontSize: 10,
+						// baseFontSize: 5,
+						font: "TimesNewRoman",
+						background: "#FFFFFF",
+						titleBackground: "#FF9900"
+					}
+				/*
 				,
 				Legend:
 					{
-						background: "Transparent"
+						
 					}//*/
 			}
 		var data =
 			{
 				Value:
 					[
-						1, 2, 3, 4, 5, 6, 7, 8, 9, 0
+						1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12
 					],
 				Category:
 					[
-						2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022
+						'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
 					]
 			}
 		var body = document.getElementById("body"); //*/document.body;
-		var charts = new SeriesChartApi(body, settings, data);
+		var chart = new LineChartApi(body, settings, data);
 
 		try {
-			if (!charts.Render()) {
+			if (!chart.Render()) {
 				alert("Err0r");
 			}
 		}
 		catch (err) {
-			alert("Uncaught Error :" + err.message);
+			alert("!!Uncaught Error :" + err.message);
 		}
 
 		// charts.Remove(true);
