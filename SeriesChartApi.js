@@ -1,4 +1,4 @@
-﻿function LineChartApi(p_element, p_settings, p_data) {
+﻿function ChartApi(p_element, p_settings, p_data) {
 
 	// Global Variables with Defaults
 	var g_sizeX = 500;
@@ -39,8 +39,8 @@
 		g_size = g_sizeX < g_sizeY ? g_sizeX : g_sizeY;
 	}
 	catch (ex) {
-		// Error Silently
-		console.log("Error Creating Chart Object: " + ex.message);
+		// Error, but let the processes continue.
+		console.error("Error Creating Chart Object: " + ex.message);
 		return;
 	}
 
@@ -223,117 +223,116 @@
 			circle.setAttribute('stroke-width', g_strokeWidth);
 			circle.setAttribute('stroke', p_lineColor);
 		}
-		circle.setAttribute('title', '444')
 
 		return p_parent.appendChild(circle);
 	}
 
-	{
-		/*
-		function Truncate(p_value) {
-			var truncation = g_chartArea.truncation;
-	
-			if (truncation == null) {
-				return p_value
-			}
-	
-			// Bring to just above 0
-			var diff = 0;
-			while (p_value <= Math.pow(10, truncation)) {
-				p_value *= 10;
-				diff++;
-			}
-			while (p_value >= Math.pow(10, truncation + 1)) {
-				p_value /= 10;
-				diff--;
-			}
-	
-			// Remove excess digits
-			p_value = Math.round(p_value);
-	
-			if (!p_isNumeral && diff != 0) {
-				// Get to nearest set of three
-				while (diff % 3 != 0) {
-					if (diff > 0) {
-						p_value /= 10;
-						diff--;
-					} else {
-						p_value *= 10;
-						diff++;
-					}
-				}
-				switch (diff / 3) {
-					case 1:
-						p_value += 'K';
-						break;
-					case 2:
-						p_value += 'M';
-						break;
-					default:
-						// Get to 0
-						while (diff != 0) {
-							if (diff > 0) {
-								p_value /= 10;
-								diff--;
-							} else {
-								p_value *= 10;
-								diff++;
-							}
-						}
-				}
-			}
-	
-			return p_value;
-		}
-	
-		function TruncateAxis(p_value, p_isTop) {
-			// Bring to just below 0
-			var diff = 0;
-	
-			while (p_value < 1) {
-				p_value *= 10;
-				diff++;
-			}
-			while (p_value > 1) {
-				p_value /= 10;
-				diff--;
-			}
-	
-			if (p_isTop) {
-				p_value = Math.ceil(p_value);
-			}
-			else {
-				p_value = Math.floor(p_value);
-			}
-	
-			while (diff < 0) {
-				p_value *= 10;
-				diff++;
-			}
-			while (diff > 0) {
-				p_value /= 10;
-				diff--;
-			}
-	
-			return p_value;
-		}
-	
-		*/
 
-		// #### High level functions ####
+	/*
+	function Truncate(p_value) {
+		var truncation = g_chartArea.truncation;
+
+		if (truncation == null) {
+			return p_value
+		}
+
+		// Bring to just above 0
+		var diff = 0;
+		while (p_value <= Math.pow(10, truncation)) {
+			p_value *= 10;
+			diff++;
+		}
+		while (p_value >= Math.pow(10, truncation + 1)) {
+			p_value /= 10;
+			diff--;
+		}
+
+		// Remove excess digits
+		p_value = Math.round(p_value);
+
+		if (!p_isNumeral && diff != 0) {
+			// Get to nearest set of three
+			while (diff % 3 != 0) {
+				if (diff > 0) {
+					p_value /= 10;
+					diff--;
+				} else {
+					p_value *= 10;
+					diff++;
+				}
+			}
+			switch (diff / 3) {
+				case 1:
+					p_value += 'K';
+					break;
+				case 2:
+					p_value += 'M';
+					break;
+				default:
+					// Get to 0
+					while (diff != 0) {
+						if (diff > 0) {
+							p_value /= 10;
+							diff--;
+						} else {
+							p_value *= 10;
+							diff++;
+						}
+					}
+			}
+		}
+
+		return p_value;
 	}
+
+	function TruncateAxis(p_value, p_isTop) {
+		// Bring to just below 0
+		var diff = 0;
+
+		while (p_value < 1) {
+			p_value *= 10;
+			diff++;
+		}
+		while (p_value > 1) {
+			p_value /= 10;
+			diff--;
+		}
+
+		if (p_isTop) {
+			p_value = Math.ceil(p_value);
+		}
+		else {
+			p_value = Math.floor(p_value);
+		}
+
+		while (diff < 0) {
+			p_value *= 10;
+			diff++;
+		}
+		while (diff > 0) {
+			p_value /= 10;
+			diff--;
+		}
+
+		return p_value;
+	}
+
+	*/
+
+	// #### High level functions ####
+
 
 	function LoadChartData() {
 		if (g_data == null) {
 			// First time setup, essentially just error check
 			if (p_data == null || p_data == undefined || p_data.Value == undefined || p_data.Category == undefined) {
-				throw "Data object not Received";
+				throw Error("Data object not Received");
 			}
 			if (p_data.Value[0] == undefined) {
-				throw "Data not Received";
+				throw Error("Data not Received");
 			}
 			if (p_data.Category[0] == undefined) {
-				throw "Categories not Received";
+				throw Error("Categories not Received");
 			}
 			g_data =
 				{
@@ -689,8 +688,7 @@
 
 		while (i < 7 && g_legend.names[i] != undefined && g_legend.names[i] != null) {
 			var text = g_legend.names[i].split('\n');
-			for (var i2 = 0; i2 < text.length; i2++)
-			{
+			for (var i2 = 0; i2 < text.length; i2++) {
 				Text(textArea,
 				g_legend.minX + (g_legend.maxX / 2),
 				g_legend.minY + ((i + 1.6) * (g_legend.maxY / 8)) + (i2 * 3),
@@ -846,8 +844,8 @@
 			return true;
 		}
 		catch (ex) {
-			console.log("Stopped Rendering due to exception:")
-			console.log(ex.message);
+			console.error("Stopped Rendering due to exception:")
+			console.error(ex.message);
 
 			if (g_canvas != null && g_canvas != undefined) {
 				console.log("Removing Canvas");
