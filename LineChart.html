@@ -2,21 +2,35 @@
 
 <html>
 <head>
-	<title>Deaths per Capita in the UK.</title>
+	<title>Cumulative Months in Year</title>
 	<script type="text/javascript" src="SeriesChartApi.js"></script>
 
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 </head>
 <body style="margin:0px;">
-	<svg id="body" width="500" height="500"></svg>
+	<svg id="body" width="650" height="500" style="border:1px solid black;"></svg>
 	<script>
 		var settings =
 			{
-				
+				/*
+				Title:
+				{
+					text: "Cumulative Months in Year"
+				},
+				YAxis:
+				{
+					text: "Cumulative Months"
+				},
+				XAxis:
+				{
+					text: "Month of Year"
+				}
+				//*/
+				BaseFont: "Verdana",
 				Title:
 				{
 					text: "Cumulative Months in Year",
-					font: "ArielNarrow",
+					//font: "TimesNewRoman",
 					background: "#FFFFFF"
 				},
 				ChartArea:
@@ -25,18 +39,18 @@
 					background: "#F0F0F0",
 					altBackground: "#FFFFFF",
 					truncation: 3,
-					yAxisDividers: 5,
-					color: ["blue"]
+					yAxisDividers: 8,
+					color: ["blue", "Green", "Black", "purple"]
 				},
 				YAxis:
 					{
-						spokeColor: "Transparent",
+						spokeColor: "grey",
 						text: "Cumulative Months",
 						// fontSize: 10,
 						// baseFontSize: 5,
-						max: 12,
-						min: 0,
-						font: "ComicSans",
+						max: 35,
+						min: 1,
+						//font: "Lucida Sans Unicode",
 						background: "#FFFFFF",
 						titleBackground: "#ff9900"
 					},
@@ -46,15 +60,18 @@
 						text: "Month of Year",
 						// fontSize: 10,
 						// baseFontSize: 5,
-						font: "TimesNewRoman",
+						//font: "TimesNewRoman",
 						background: "#FFFFFF",
 						titleBackground: "#FF9900"
 					}
-				/*
+
 				,
 				Legend:
 					{
-						
+						names: ["Cumulative\nMonths", "Months\nRemaining", "Value of\nMonth", "Days in\nMonth"],
+						text: "Legend",
+						background: "White",
+						altBackground: "#ff9900"
 					}//*/
 			}
 		var data =
@@ -62,6 +79,18 @@
 				Value:
 					[
 						1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12
+					],
+				Value2:
+					[
+						11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0
+					],
+				Value3:
+					[
+						1, 1, 1, 1, , null, 1, null, 1, 1, 1, 1
+					],
+				Value4:
+					[
+						31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31
 					],
 				Category:
 					[

@@ -1,4 +1,4 @@
-function LineChartApi(p_element, p_settings, p_data) {
+﻿function LineChartApi(p_element, p_settings, p_data) {
 
 	// Global Variables with Defaults
 	var g_sizeX = 500;
@@ -10,6 +10,7 @@ function LineChartApi(p_element, p_settings, p_data) {
 	var g_upperLimit = null;
 	var g_strokeWidth = "2px";
 	var g_fontSuffix = "pt";
+	var g_baseFont = "TimesNewRoman";
 
 	// Create Global Elements
 	var g_canvas;
@@ -52,7 +53,7 @@ function LineChartApi(p_element, p_settings, p_data) {
 			// This reference is for the text directly, unlike the other references for the parent element.
 			reference: null,
 			text: "",
-			font: "TimesNewRoman",
+			font: null,
 			background: "#FFFFFF",
 			fontSize: null,
 			minX: 0,
@@ -81,7 +82,7 @@ function LineChartApi(p_element, p_settings, p_data) {
 			text: "",
 			fontSize: null,
 			baseFontSize: null,
-			font: "TimesNewRoman",
+			font: null,
 			background: "#FFFFFF",
 			titleBackground: null,
 			spokeColor: "#808080",
@@ -98,7 +99,7 @@ function LineChartApi(p_element, p_settings, p_data) {
 			text: "",
 			fontSize: null,
 			baseFontSize: null,
-			font: "TimesNewRoman",
+			font: null,
 			background: "#FFFFFF",
 			titleBackground: null,
 			spokeColor: "#808080",
@@ -169,7 +170,7 @@ function LineChartApi(p_element, p_settings, p_data) {
 
 	function TextArea(p_parent, p_font, p_fontSize, p_isVertical, p_x, p_y) {
 		if (p_font == null || p_font == undefined) {
-			p_font = 'Times New Roman';
+			p_font = g_baseFont;
 		}
 
 		if (p_parent == null || p_parent == undefined) {
@@ -178,7 +179,7 @@ function LineChartApi(p_element, p_settings, p_data) {
 
 		var text = document.createElementNS("http://www.w3.org/2000/svg", "text");
 		text.setAttribute('fill', "#000");
-		text.setAttribute('font', p_font);
+		text.setAttribute('font-family', p_font);
 		text.setAttribute('font-size', p_fontSize + g_fontSuffix);
 
 		if (p_isVertical) {
@@ -197,14 +198,12 @@ function LineChartApi(p_element, p_settings, p_data) {
 		text.setAttribute('x', p_x + '%');
 		text.setAttribute('y', p_y + '%');
 		text.setAttribute('text-anchor', 'middle');
-		text.setAttribute('style', 'pointer-events: none;')
 
 		text.innerHTML = p_message;
 		return p_parent.appendChild(text);
 	}
 
-	function Circle (p_parent, p_x, p_y, p_radius, p_background, p_lineColor)
-	{
+	function Circle(p_parent, p_x, p_y, p_radius, p_background, p_lineColor) {
 		if (p_parent == null || p_parent == undefined) {
 			p_parent = g_canvas;
 		}
@@ -229,99 +228,100 @@ function LineChartApi(p_element, p_settings, p_data) {
 		return p_parent.appendChild(circle);
 	}
 
-	/*
-	function Truncate(p_value) {
-		var truncation = g_chartArea.truncation;
-
-		if (truncation == null) {
-			return p_value
-		}
-
-		// Bring to just above 0
-		var diff = 0;
-		while (p_value <= Math.pow(10, truncation)) {
-			p_value *= 10;
-			diff++;
-		}
-		while (p_value >= Math.pow(10, truncation + 1)) {
-			p_value /= 10;
-			diff--;
-		}
-
-		// Remove excess digits
-		p_value = Math.round(p_value);
-
-		if (!p_isNumeral && diff != 0) {
-			// Get to nearest set of three
-			while (diff % 3 != 0) {
-				if (diff > 0) {
-					p_value /= 10;
-					diff--;
-				} else {
-					p_value *= 10;
-					diff++;
+	{
+		/*
+		function Truncate(p_value) {
+			var truncation = g_chartArea.truncation;
+	
+			if (truncation == null) {
+				return p_value
+			}
+	
+			// Bring to just above 0
+			var diff = 0;
+			while (p_value <= Math.pow(10, truncation)) {
+				p_value *= 10;
+				diff++;
+			}
+			while (p_value >= Math.pow(10, truncation + 1)) {
+				p_value /= 10;
+				diff--;
+			}
+	
+			// Remove excess digits
+			p_value = Math.round(p_value);
+	
+			if (!p_isNumeral && diff != 0) {
+				// Get to nearest set of three
+				while (diff % 3 != 0) {
+					if (diff > 0) {
+						p_value /= 10;
+						diff--;
+					} else {
+						p_value *= 10;
+						diff++;
+					}
+				}
+				switch (diff / 3) {
+					case 1:
+						p_value += 'K';
+						break;
+					case 2:
+						p_value += 'M';
+						break;
+					default:
+						// Get to 0
+						while (diff != 0) {
+							if (diff > 0) {
+								p_value /= 10;
+								diff--;
+							} else {
+								p_value *= 10;
+								diff++;
+							}
+						}
 				}
 			}
-			switch (diff / 3) {
-				case 1:
-					p_value += 'K';
-					break;
-				case 2:
-					p_value += 'M';
-					break;
-				default:
-					// Get to 0
-					while (diff != 0) {
-						if (diff > 0) {
-							p_value /= 10;
-							diff--;
-						} else {
-							p_value *= 10;
-							diff++;
-						}
-					}
+	
+			return p_value;
+		}
+	
+		function TruncateAxis(p_value, p_isTop) {
+			// Bring to just below 0
+			var diff = 0;
+	
+			while (p_value < 1) {
+				p_value *= 10;
+				diff++;
 			}
+			while (p_value > 1) {
+				p_value /= 10;
+				diff--;
+			}
+	
+			if (p_isTop) {
+				p_value = Math.ceil(p_value);
+			}
+			else {
+				p_value = Math.floor(p_value);
+			}
+	
+			while (diff < 0) {
+				p_value *= 10;
+				diff++;
+			}
+			while (diff > 0) {
+				p_value /= 10;
+				diff--;
+			}
+	
+			return p_value;
 		}
+	
+		*/
 
-		return p_value;
+		// #### High level functions ####
 	}
-
-	function TruncateAxis(p_value, p_isTop) {
-		// Bring to just below 0
-		var diff = 0;
-
-		while (p_value < 1) {
-			p_value *= 10;
-			diff++;
-		}
-		while (p_value > 1) {
-			p_value /= 10;
-			diff--;
-		}
-
-		if (p_isTop) {
-			p_value = Math.ceil(p_value);
-		}
-		else {
-			p_value = Math.floor(p_value);
-		}
-
-		while (diff < 0) {
-			p_value *= 10;
-			diff++;
-		}
-		while (diff > 0) {
-			p_value /= 10;
-			diff--;
-		}
-
-		return p_value;
-	}
-
-	*/
-
-	// #### High level functions ####
-
 
 	function LoadChartData() {
 		if (g_data == null) {
@@ -337,8 +337,14 @@ function LineChartApi(p_element, p_settings, p_data) {
 			}
 			g_data =
 				{
+					category: p_data.Category,
 					value: p_data.Value,
-					category: p_data.Category
+					value2: p_data.Value2,
+					value3: p_data.Value3,
+					value4: p_data.Value4,
+					value5: p_data.Value5,
+					value6: p_data.Value6,
+					value7: p_data.Value7
 				}
 		}
 		else {
@@ -349,12 +355,16 @@ function LineChartApi(p_element, p_settings, p_data) {
 	// Load in details from the input object
 	function LoadSettings() {
 		console.log("Receiving Settings:");
+		if (p_settings.BaseFont != undefined) {
+			console.log("Base Font Received");
+			g_baseFont = p_settings.BaseFont;
+		}
 		if (p_settings.Title != undefined) {
 			console.log("Title Received");
 			if (p_settings.Title.text != undefined) g_title.text = p_settings.Title.text;
 			if (p_settings.Title.font != undefined) g_title.font = p_settings.Title.font;
 			if (p_settings.Title.background != undefined) g_title.background = p_settings.Title.background;
-		} 
+		}
 		if (p_settings.ChartArea != undefined) {
 			console.log("ChartArea Received");
 			if (p_settings.ChartArea.canvasBackground != undefined) g_chartArea.canvasBackground = p_settings.ChartArea.canvasBackground;
@@ -365,14 +375,17 @@ function LineChartApi(p_element, p_settings, p_data) {
 			if (p_settings.ChartArea.yAxisDividers != undefined) g_chartArea.yAxisDividers = p_settings.ChartArea.yAxisDividers;
 			if (p_settings.ChartArea.truncation != undefined) g_chartArea.truncation = p_settings.ChartArea.truncation;
 		}
-		if (p_settings.Legend != undefined) {
+		if (p_settings.Legend != undefined && p_settings.Legend.names != undefined) {
 			console.log("Legend Received");
 			g_legend =
 				{
-					font: p_settings.Legend.font != undefined ? p_settings.Legend.font : "TimesNewRoman",
+					text: p_settings.Legend.text != undefined ? p_settings.Legend.text : null,
+					font: p_settings.Legend.font != undefined ? p_settings.Legend.font : g_baseFont,
 					background: p_settings.Legend.background != undefined ? p_settings.Legend.background : "#FFFFFF",
-					titleBackground: p_settings.Legend.titleBackground != undefined ? p_settings.Legend.titleBackground : null,
-					fontSize: 0,
+					altBackground: p_settings.Legend.altBackground != undefined ? p_settings.Legend.altBackground : null,
+					names: p_settings.Legend.names,
+					fontSize: null,
+					baseFontSize: null,
 					minX: 0,
 					minY: 0,
 					maxX: 0,
@@ -392,7 +405,7 @@ function LineChartApi(p_element, p_settings, p_data) {
 			if (p_settings.YAxis.spokeColor != undefined) g_yAxis.spokeColor = p_settings.YAxis.spokeColor;
 		}
 		if (p_settings.XAxis != undefined) {
-			console.log("XAXis Received");
+			console.log("XAxis Received");
 			if (p_settings.XAxis.text != undefined) g_xAxis.text = p_settings.XAxis.text;
 			if (p_settings.XAxis.font != undefined) g_xAxis.font = p_settings.XAxis.font;
 			if (p_settings.XAxis.background != undefined) g_xAxis.background = p_settings.XAxis.background;
@@ -445,20 +458,123 @@ function LineChartApi(p_element, p_settings, p_data) {
 		if (g_xAxis.baseFontSize == null || g_xAxis.baseFontSize < 0) {
 			g_xAxis.baseFontSize = 3 * baseFontSize;
 		}
+		// #### Legend ####
+		if (g_legend != undefined) {
+			// Dimentions
+			g_legend.minX = 80;
+			g_legend.minY = 20;
+			g_legend.maxX = 20;
+			g_legend.maxY = 80;
+			// Font Sizes
+			if (g_legend.fontSize == null || g_legend.fontSize < 0) {
+				g_legend.fontSize = 3 * baseFontSize;
+			}
+			if (g_legend.baseFontSize == null || g_legend.baseFontSize < 0) {
+				g_legend.baseFontSize = 2 * baseFontSize;
+			}
+		}
 	}
 
 	function SizeData() {
 		// #### Y Axis ####
 		// Y Axis Min & Max
+
+		// Value
+
 		var max = Math.max.apply(null, g_data.value);
 		var min = Math.min.apply(null, g_data.value);
+
+		// Value2
+
+		if (g_data.value2 != undefined && g_data.value2 != null) {
+			var max2 = Math.max.apply(null, g_data.value2);
+			var min2 = Math.min.apply(null, g_data.value2);
+
+			if (max < max2) {
+				max = max2;
+			}
+			if (min > min2) {
+				min = min2;
+			}
+		}
+
+		// Value3
+
+		if (g_data.value3 != undefined && g_data.value3 != null) {
+			var max2 = Math.max.apply(null, g_data.value3);
+			var min2 = Math.min.apply(null, g_data.value3);
+
+			if (max < max2) {
+				max = max2;
+			}
+			if (min > min2) {
+				min = min2;
+			}
+		}
+
+		// Value4
+
+		if (g_data.value4 != undefined && g_data.value4 != null) {
+			var max2 = Math.max.apply(null, g_data.value4);
+			var min2 = Math.min.apply(null, g_data.value4);
+
+			if (max < max2) {
+				max = max2;
+			}
+			if (min > min2) {
+				min = min2;
+			}
+		}
+
+		// Value5
+
+		if (g_data.Value5 != undefined && g_data.Value5 != null) {
+			var max2 = Math.max.apply(null, g_data.Value5);
+			var min2 = Math.min.apply(null, g_data.Value5);
+
+			if (max < max2) {
+				max = max2;
+			}
+			if (min > min2) {
+				min = min2;
+			}
+		}
+
+		// Value6
+
+		if (g_data.Value6 != undefined && g_data.Value6 != null) {
+			var max2 = Math.max.apply(null, g_data.Value6);
+			var min2 = Math.min.apply(null, g_data.Value6);
+
+			if (max < max2) {
+				max = max2;
+			}
+			if (min > min2) {
+				min = min2;
+			}
+		}
+
+		// Value7
+
+		if (g_data.Value7 != undefined && g_data.Value7 != null) {
+			var max2 = Math.max.apply(null, g_data.Value7);
+			var min2 = Math.min.apply(null, g_data.Value7);
+
+			if (max < max2) {
+				max = max2;
+			}
+			if (min > min2) {
+				min = min2;
+			}
+		}
+
 		if (g_yAxis.max == null || g_yAxis.max < max) {
 			g_yAxis.max = max;
 		}
 		if (g_yAxis.min == null || g_yAxis.min > min) {
 			g_yAxis.min = min;
 		}
-		// Truncate
+		// Truncate.. Or not
 		g_yAxis.max = g_yAxis.max; //TruncateAxis(g_yAxis.max, true);
 		g_yAxis.min = g_yAxis.min; //TruncateAxis(g_yAxis.min, false);
 	}
@@ -514,9 +630,8 @@ function LineChartApi(p_element, p_settings, p_data) {
 		Rect(g_xAxis.reference, g_xAxis.minX, g_xAxis.minY, g_xAxis.maxX, g_xAxis.maxY, g_xAxis.background, "#000");
 		// XAxis Alt Background
 		Rect(g_xAxis.reference, g_xAxis.minX, g_xAxis.minY + (g_xAxis.maxY / 2), g_xAxis.maxX, g_xAxis.maxY / 2, g_xAxis.titleBackground, "#000");
-		// YAxis Text
+		// XAxis Text
 		var textArea = TextArea(g_xAxis.reference, g_xAxis.font, g_xAxis.fontSize, false);
-		// Reverse X & Y when using vertical text, and use negative Y
 		Text(textArea,
 			g_xAxis.minX + (g_xAxis.maxX / 2),
 			g_xAxis.minY + (g_xAxis.maxY * (3 / 4)),
@@ -547,10 +662,101 @@ function LineChartApi(p_element, p_settings, p_data) {
 		// Legend Reference
 		g_legend.reference = Group();
 		// Legend Area
-		Rect(g_legend.reference, 80, 20, 20, 80, g_legend.background, "#000");
+		Rect(g_legend.reference,
+			g_legend.minX,
+			g_legend.minY,
+			g_legend.maxX,
+			g_legend.maxY,
+			g_legend.background,
+			"#000");
 		// Legend Alt Background
-		Rect(g_legend.reference, 80, 20, 20, 10, g_legend.titleBackground, "#000");
+		Rect(g_legend.reference,
+			g_legend.minX,
+			g_legend.minY,
+			g_legend.maxX,
+			g_legend.maxY / 8,
+			g_legend.altBackground,
+			"#000");
+		// Legend Text
+		var textArea = TextArea(g_legend.reference, g_legend.font, g_legend.fontSize, false);
+		Text(textArea,
+			g_legend.minX + (g_legend.maxX / 2),
+			g_legend.minY + (g_legend.maxY / 16),
+			g_legend.text);
+		// Legend Categories
+		var textArea = TextArea(g_legend.reference, g_legend.font, g_legend.baseFontSize, false);
+		var i = 0;
+
+		while (i < 7 && g_legend.names[i] != undefined && g_legend.names[i] != null) {
+			var text = g_legend.names[i].split('\n');
+			for (var i2 = 0; i2 < text.length; i2++)
+			{
+				Text(textArea,
+				g_legend.minX + (g_legend.maxX / 2),
+				g_legend.minY + ((i + 1.6) * (g_legend.maxY / 8)) + (i2 * 3),
+				text[i2]);
+			}
+
+			var pointBorder = g_chartArea.pointBorder == null || g_chartArea.pointBorder[i] == null ? g_chartArea.color[i] : g_chartArea.pointBorder[i];
+
+			Circle(g_legend.reference,
+				g_legend.minX + (g_legend.maxX / 2),
+				g_legend.minY + ((i + 1.2) * (g_legend.maxY / 8)),
+				0.75,
+				g_chartArea.color[i],
+				pointBorder);
+
+			Rect(g_legend.reference,
+				g_legend.minX,
+				g_legend.minY + ((i + 1) * (g_legend.maxY / 8)),
+				g_legend.maxX,
+				g_legend.maxY / 8,
+				null,
+				'#000000');
+
+			i++;
+		}
 		return true
+	}
+
+	// Helper function for DrawChart()
+	function DrawLine(p_colorNB, p_data) {
+		if (p_data == undefined || p_data == null) {
+			return false
+		}
+		// Points in Graph
+		var nextY = 1 - ((p_data[0] - g_yAxis.min) / (g_yAxis.max - g_yAxis.min));
+		var incrementX = g_chartArea.maxX / (p_data.length - 1);
+		var pointBorder = g_chartArea.pointBorder == null || g_chartArea.pointBorder[p_colorNB] == null ? g_chartArea.color[p_colorNB] : g_chartArea.pointBorder[p_colorNB];
+
+		for (var i = 0; i < (p_data.length - 1) ; i++) {
+			var x1 = g_chartArea.minX + (i * incrementX);
+			var x2 = g_chartArea.minX + ((i + 1) * incrementX);
+
+			if (p_data[i + 1] == undefined || p_data[i + 1] == null ||
+				p_data[i] == undefined || p_data[i] == null) {
+				if (!(p_data[i] == undefined || p_data[i] == null)) {
+					Circle(g_chartArea.reference, x1, y1, 0.75, g_chartArea.color[p_colorNB], pointBorder);
+				}
+
+				nextY = 1 - ((p_data[i + 1] - g_yAxis.min) / (g_yAxis.max - g_yAxis.min));
+				continue;
+			}
+
+			var y1 = (nextY * g_chartArea.maxY) + g_chartArea.minY;
+			nextY = 1 - ((p_data[i + 1] - g_yAxis.min) / (g_yAxis.max - g_yAxis.min));
+
+			var y2 = (nextY * g_chartArea.maxY) + g_chartArea.minY;
+			Line(g_chartArea.reference, x1, y1, x2, y2, g_chartArea.color[p_colorNB]);
+
+
+			Circle(g_chartArea.reference, x1, y1, 0.75, g_chartArea.color[p_colorNB], pointBorder);
+			if (i == p_data.length - 2) {
+				var point = Circle(g_chartArea.reference, x2, y2, 0.75, g_chartArea.color[p_colorNB], pointBorder);
+			}
+		}
+
+		return true;
 	}
 
 	function DrawChart() {
@@ -569,8 +775,7 @@ function LineChartApi(p_element, p_settings, p_data) {
 			var x = g_chartArea.minX + (i * increment);
 
 			var color = g_xAxis.spokeColor;
-			if (i == 0 || i == g_data.value.length - 1)
-			{
+			if (i == 0 || i == g_data.value.length - 1) {
 				color = "#000000";
 			}
 
@@ -589,8 +794,7 @@ function LineChartApi(p_element, p_settings, p_data) {
 			var y = (nextY * g_chartArea.maxY) + g_chartArea.minY;
 
 			var color = g_yAxis.spokeColor;
-			if (i == 0 || i == g_chartArea.yAxisDividers - 1)
-			{
+			if (i == 0 || i == g_chartArea.yAxisDividers - 1) {
 				color = "#000000";
 			}
 
@@ -605,27 +809,13 @@ function LineChartApi(p_element, p_settings, p_data) {
 		// Chart Area Outline
 		Rect(g_chartArea.reference, g_chartArea.minX, g_chartArea.minY, g_chartArea.maxX, g_chartArea.maxY, null, "#000");
 
-		// Points in Graph
-		var nextY = 1 - ((g_data.value[0] - g_yAxis.min) / (g_yAxis.max - g_yAxis.min));
-		var incrementX = g_chartArea.maxX / (g_data.value.length - 1);
-		var pointBorder = g_chartArea.pointBorder == null || g_chartArea.pointBorder[0] == null ? g_chartArea.color[0] : g_chartArea.pointBorder[0];
-
-		for (var i = 0; i < (g_data.value.length - 1) ; i++) {
-			var x1 = g_chartArea.minX + (i * incrementX);
-			var x2 = g_chartArea.minX + ((i + 1) * incrementX);
-			var y1 = (nextY * g_chartArea.maxY) + g_chartArea.minY;
-			nextY = 1 - ((g_data.value[i + 1] - g_yAxis.min) / (g_yAxis.max - g_yAxis.min));
-
-			var y2 = (nextY * g_chartArea.maxY) + g_chartArea.minY;
-			Line(g_chartArea.reference, x1, y1, x2, y2, g_chartArea.color[0]);
-
-
-			Circle(g_chartArea.reference, x1, y1, 0.75, g_chartArea.color[0], pointBorder);
-			if (i == g_data.value.length - 2)
-			{
-				var point = Circle(g_chartArea.reference, x2, y2, 0.75, g_chartArea.color[0], pointBorder);
-			}
-		}
+		DrawLine(6, g_data.value7);
+		DrawLine(5, g_data.value6);
+		DrawLine(4, g_data.value5);
+		DrawLine(3, g_data.value4);
+		DrawLine(2, g_data.value3);
+		DrawLine(1, g_data.value2);
+		DrawLine(0, g_data.value);
 	}
 
 	// #### Public Functions ####
