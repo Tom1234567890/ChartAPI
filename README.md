@@ -32,6 +32,32 @@ This is a tool that will be used to prevent misinformation being provided. This 
 
 Hopefully this is also a tool that will allow for users to challenge their assertions. By providing statistical analysis we can challenge illogical beliefs.
 
+###01-Sep-16
+
+Sleepless but awesome, the refactor is complete.
+
+We now use three 'teirs' of objects.
+
+- Base Tier
+- Parent Tier
+- Child Tier
+
+The Base tier is a one of a kind object that loads the data and settings, draws the chart header and contains all of the User Interface functions.
+This tier is also responsible for the lower level helper functions like "Line" and "Circle".
+
+The Parent tier is responsible for the layout, and some calculation to go with that.
+Each of these will be responsible for several charts. For instance the line chart and the bar chart will share many elements (Y axis, X Axis, Legend), so they will have the same parent. However the proportion charts will not contain these elements so they will use a different parent.
+
+The Child teir contains the instructions to render the chart specifically. For instance it will draw out lines for the line chart, or bars for the bar chart.
+
+This change let me review everything I've done so far, and you'll see some comments & redundant fields being stripped out. I also noticed that the error handling was incorrectly set up, so I've re-implemented that more successfully.
+
+The only thing left to do is to separate the files out. Going forwards the base tier is kept separate and the parents are kept in their own files with all their children <3 this reduces what needs to be loaded without getting as cumbersome as it could be.
+
+I'll leave that till tomorrow, right now I need some sleep.
+
+Goodnight, 
+
 ###31-Aug-16
 Work has now finished on the line graph.
 
