@@ -23,15 +23,3 @@ It's not good enough to simply be told “Crime is at an all time high”. We ne
 - Proportion chart. (Comparison chart)
   This chart allows for the comparison of directly linked data, for instance it can show prevalence of types of crime.
   Essentially a linear pie chart, however I have a personal bias against pie charts so this is what you get.
-
-##Actively worked on
-
-##The Wishlist
-- Create Filtering Widget. (Way to split grouped data into it's components. E.G: Split "Total population by year" into "Population by year and age")
-- Allow for the sharing of filtered results.
-- Create Scatter Graph.
-- User guide for the API :(
-- Implement Variable X Axis into all charts.
-- Create Correlation Widget
-- Create Testing website
-- Allow for Ajax calls to be made for live data.
