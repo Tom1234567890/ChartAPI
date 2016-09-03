@@ -1,15 +1,30 @@
 #The ChartAPI Vision
 This project aims to provide a way for the public to prove and disprove assertions using their own facts.
 
-This will be done by taking large amounts of data (E.G. The UK's census) and allowing users to filter down this data into what matters. Once the user has the data they are interested they need to be able to analyze the data. This means applying statistical analysis to the data in order to obtain a particular fact.
+This will be done by taking large amounts of data (E.G. The UK's census) and allowing users to filter down this data into what they deem relevant. 
+
+Once the user has the data they are interested they need to be able to analyze the data. This means applying statistical analysis to the data in order to obtain a particular fact, while still remaining as user friendly as posisble.
+#The Story
+
+I personally found Brexit to be the most infuriating politics I have had ever witnessed.
+
+Both sides of the argument used blatant misinformation and fear in order to muscle the public into a decision they may have not understood fully, a practice that should be condemned to the history books.
+
+I disagree with this type of politics to the extent I am willing to fight it here. I want the truth, the whole truth and nothing but the truth.
+
+This is a tool that will be used to fact check statements. This is a tool that can be used to make your own mind about difficult issues and enable you to share the facts that lead to your opinions.
+
+It's not good enough to simply be told “Crime is at an all time high”. We need to know how accurate this is. We need to know what crimes are becoming a bigger issue, and if our government are taking steps to combat it. Then voters will be able to make a decision on a factual basis, rather than on a gut feeling.
+
 #Current Features:
 - Line chart. (First single-series / multi-series chart)
   This chart allows for the exposure of trends over the course of several different data points.
   While this is not directly related to the vision, it serves as a good starting point to get working.
-- ...
+- Proportion chart. (Comparison chart)
+  This chart allows for the comparison of directly linked data, for instance it can show prevalence of types of crime.
+  Essentially a linear pie chart, however I have a personal bias against pie charts so this is what you get.
 
 ##Actively worked on
-- Create proportion chart. (Single-series chart)
 
 ##The Wishlist
 - Create Filtering Widget. (Way to split grouped data into it's components. E.G: Split "Total population by year" into "Population by year and age")
@@ -21,16 +36,23 @@ This will be done by taking large amounts of data (E.G. The UK's census) and all
 - Create Testing website
 - Allow for Ajax calls to be made for live data.
 
-#The Story
-I personally found Brexit to be the most infuriating politics I have had ever witnessed.
+###03-Sep-16
 
-Both sides of the argument used blatant misinformation and fear in order to muscle the public into a decision they may have not understood fully.
+This update took a bit longer than anticipated. Not that it was particularly difficult, I've just been particularly busy. 
 
-I disagree with this type of politics to the extent I am willing to fight it here. I want the truth, the whole truth and nothing but the truth.
+Plenty new files have been added, so I'll talk a bit more about the structure of the project.
 
-This is a tool that will be used to prevent misinformation being provided. This is a tool that can be used to make your own mind about difficult issues and enable you to share the facts that lead to your opinions.
+The base object that contains all the setup code is held in the ChartApi.js. This will need to be included for every chart.
 
-Hopefully this is also a tool that will allow for users to challenge their assertions. By providing statistical analysis we can challenge illogical beliefs.
+Each parent object has it's own file, shared with all it's children. The file TemplateChartApi.js set's out an empty chart file to be used in the future.
+
+The Proportion chart has been added in order to test out this template. It's not quite finished but can be showcased in ProportionChart.html. All that remains is to work out what is happening with multiple data set's and legends.
+
+The proportion chart has been eye opening. I can now see the limitations of the base object more clearly and will be taking steps to enhance it before making more charts.
+
+Finally I've realized that I've lost my way somewhat. While the base object is well thought out with regards to the future, the line chart and proportion chart's do not lend themselves to the future I'm planning.
+
+Too much time has been spent on this project ad-hoc. I'll be seriously reconsidering the roadmap and how the charts thus far fit into it.
 
 ###01-Sep-16
 
