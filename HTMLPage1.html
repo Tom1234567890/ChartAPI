@@ -1,0 +1,88 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+</head>
+<body>
+	<script>
+
+		function Truncate(p_value, p_isNumeral) {
+			var truncation = null; //g_chartArea.truncation;
+
+			if (p_isNumeral) {
+				// Only want one digit.
+				truncation = 0;
+			}
+
+			if (truncation == null) {
+				return p_value
+			}
+
+			// Bring to just above 0
+			var diff = 0;
+			while (p_value <= Math.pow(10, truncation)) {
+				p_value *= 10;
+				diff++;
+			}
+			while (p_value >= Math.pow(10, truncation + 1)) {
+				p_value /= 10;
+				diff--;
+			}
+			alert(p_value + "," + diff);
+			// Remove excess digits
+			p_value = Math.round(p_value);
+
+			if (!p_isNumeral && diff != 0) {
+				// Get to nearest set of three
+				while (diff % 3 != 0) {
+					if (diff > 0) {
+						p_value /= 10;
+						diff--;
+					} else {
+						p_value *= 10;
+						diff++;
+					}
+				}
+				switch (diff / 3) {
+					case 1:
+						p_value += 'K';
+						break;
+					case 2:
+						p_value += 'M';
+						break;
+					default:
+						// Get to 0
+						while (diff != 0) {
+							if (diff > 0) {
+								p_value /= 10;
+								diff--;
+							} else {
+								p_value *= 10;
+								diff++;
+							}
+						}
+				}
+			}
+			else if (p_isNumeral) {
+				// Get to 0
+				while (diff != 0) {
+					if (diff > 0) {
+						p_value /= 10;
+						diff--;
+					} else {
+						p_value *= 10;
+						diff++;
+					}
+				}
+			}
+
+			return p_value;
+		}
+
+
+		alert(Truncate(71, true));
+	</script>
+</body>
+</html>

@@ -4,7 +4,7 @@
 <head>
 	<title>Cumulative Months in Year</title>
 	<script type="text/javascript" src="ChartApi.js"></script>
-	<script type="text/javascript" src="SeriesChartApi.js"></script>
+	<script type="text/javascript" src="ComparisonChartApi.js"></script>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 </head>
 <body style="margin:0px;">
@@ -39,8 +39,8 @@
 					background: "#F0F0F0",
 					altBackground: "#FFFFFF",
 					truncation: 3,
-					yAxisDividers: 8,
-					color: ["blue", "Green", "Black", "purple"]
+					yAxisDividers: 7,
+					color: ["#562a12", "#561224", "#56124f", "#371256", "#122656", "#125650", "#125627", "#165612", "#3e5612", "#565112", "#563712", "#561512"]
 				},
 				YAxis:
 					{
@@ -80,6 +80,7 @@
 					[
 						1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12
 					],
+				/*
 				Value2:
 					[
 						11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0
@@ -91,14 +92,14 @@
 				Value4:
 					[
 						31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31
-					],
+					],*/
 				Category:
 					[
 						'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
 					]
 			}
 		var body = document.getElementById("body"); //*/document.body;
-		var chart = new LineChartApi(body, settings, data);
+		var chart = new ProportionChartApi(body, settings, data);
 
 		try {
 			if (!chart.Render()) {
