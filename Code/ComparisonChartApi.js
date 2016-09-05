@@ -240,7 +240,8 @@ function ProportionChartApi(p_element, p_settings, p_data) {
 				this.g_yAxis.minY + (this.g_yAxis.maxY / 4));
 
 			// Ensure we only get 5 characters. /,/g replaces all instances of ,
-			var text = p_data[i].toString().split('', 5).toString().replace(/,/g, '');
+			var text = ((p_data[i] / this.g_yAxis.max) * 100).toString().split('', 2).toString().replace(/,/g, '');
+			text += '%';
 
 			text = this.Text(textArea,
 				spokeX + 1, // TODO: Replace 1 with somthing more sensible

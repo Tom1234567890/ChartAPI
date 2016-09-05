@@ -402,3 +402,63 @@ function LineChartApi(p_element, p_settings, p_data) {
 		this.DrawPoint(0, this.g_data.value);
 	}
 };
+
+// Child object
+// User-Interactable object
+
+function ScatterChartApi(p_element, p_settings, p_data) {
+	// Setup Inheritence
+
+	this.base = SeriesChartApi;
+	this.base(p_element, p_settings, p_data);
+
+	// Helper function for DrawChart()
+	this.DrawPoint = function (p_colorNB, p_data) {
+		if (p_data == undefined || p_data == null) {
+			return false
+		}
+		// Points in Graph
+		var nextY = 1 - ((p_data[0] - this.g_yAxis.min) / (this.g_yAxis.max - this.g_yAxis.min));
+		var incrementX = this.g_chartArea.maxX / (p_data.length - 1);
+		var pointBorder = this.g_chartArea.pointBorder == null || this.g_chartArea.pointBorder[p_colorNB] == null ? this.g_chartArea.color[p_colorNB] : this.g_chartArea.pointBorder[p_colorNB];
+
+		for (var i = 0; i < (p_data.length - 1) ; i++) {
+			var x1 = this.g_chartArea.minX + (i * incrementX);
+			var x2 = this.g_chartArea.minX + ((i + 1) * incrementX);
+
+			if (p_data[i + 1] == undefined || p_data[i + 1] == null ||
+				p_data[i] == undefined || p_data[i] == null) {
+				if (!(p_data[i] == undefined || p_data[i] == null)) {
+					this.Circle(this.g_chartArea.reference, x1, y1, 0.75, this.g_chartArea.color[p_colorNB], pointBorder);
+				}
+
+				nextY = 1 - ((p_data[i + 1] - this.g_yAxis.min) / (this.g_yAxis.max - this.g_yAxis.min));
+				continue;
+			}
+
+			var y1 = (nextY * this.g_chartArea.maxY) + this.g_chartArea.minY;
+			nextY = 1 - ((p_data[i + 1] - this.g_yAxis.min) / (this.g_yAxis.max - this.g_yAxis.min));
+
+			var y2 = (nextY * this.g_chartArea.maxY) + this.g_chartArea.minY;
+
+
+			this.Circle(this.g_chartArea.reference, x1, y1, 0.75, this.g_chartArea.color[p_colorNB], pointBorder);
+			if (i == p_data.length - 2) {
+				var point = this.Circle(this.g_chartArea.reference, x2, y2, 0.75, this.g_chartArea.color[p_colorNB], pointBorder);
+			}
+		}
+
+		return true;
+	};
+
+	// Function used to plot Scatter chart's
+	this.DrawChart = function () {
+		this.DrawPoint(6, this.g_data.value7);
+		this.DrawPoint(5, this.g_data.value6);
+		this.DrawPoint(4, this.g_data.value5);
+		this.DrawPoint(3, this.g_data.value4);
+		this.DrawPoint(2, this.g_data.value3);
+		this.DrawPoint(1, this.g_data.value2);
+		this.DrawPoint(0, this.g_data.value);
+	};
+}

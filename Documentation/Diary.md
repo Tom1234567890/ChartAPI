@@ -1,3 +1,19 @@
+###05-Sep-16
+
+Alright, Epithany complete.
+
+The last two days hgave been fairly quiet. 
+
+In this I refactored the Git file hierachy to cope with the increased demand, and got Visual Studios to link to github (More hastle than it was worth, but it decided to break when I was adding new files so it became nessisary).
+
+So while I repaired and upgraded VS I thought about my intention for the line chart. The intention was more akain to a scatter graph, where the points have a line of best fit applied. 
+
+This opens the project up to more interesting analysis & features, whereas the line chart only displays what it is given.
+
+So I have created the scatter graph in order to begin this process. This took about 10 min thanks to all the work I've done with templates and the quite handy line chart code.
+
+Next I've bumped the correlation widget upwards in the WorkList™ so that the scatter graph can work with it. At the moment the scatter graph will not be useful without it.
+
 ###03-Sep-16
 
 This update took a bit longer than anticipated. Not that it was particularly difficult, I've just been particularly busy. 

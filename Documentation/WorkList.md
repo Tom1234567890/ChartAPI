@@ -1,5 +1,4 @@
 #Actively worked on
-- Create Scatter Graph.
 - Create Correlation Widget.
 
 #Enhancements
