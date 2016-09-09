@@ -10,7 +10,7 @@ function BaseChartApi(p_element, p_settings, p_data) {
 	this.g_data;
 	var g_sizeX = 500;
 	var g_sizeY = 500;
-	var g_strokeWidth = "2px";
+	var g_strokeWidth = "1px";
 	var g_fontSuffix = "pt";
 	var g_baseFont = "TimesNewRoman";
 
@@ -162,6 +162,24 @@ function BaseChartApi(p_element, p_settings, p_data) {
 		line.setAttribute('x2', p_x2 + '%');
 		line.setAttribute('y2', p_y2 + '%');
 		line.setAttribute('stroke-width', g_strokeWidth);
+		line.setAttribute('stroke', p_lineColor);
+		p_parent.appendChild(line);
+	}
+
+	this.DottedLine = function (p_parent, p_x1, p_y1, p_x2, p_y2, p_lineColor) {
+		if (p_lineColor == "Transparent") p_background = null;
+		if (p_lineColor == null) return;
+		if (p_parent == null || p_parent == undefined) {
+			p_parent = this.g_canvas;
+		}
+
+		var line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+		line.setAttribute('x1', p_x1 + '%');
+		line.setAttribute('y1', p_y1 + '%');
+		line.setAttribute('x2', p_x2 + '%');
+		line.setAttribute('y2', p_y2 + '%');
+		line.setAttribute('stroke-width', g_strokeWidth);
+		line.setAttribute('stroke-dasharray', "10,5");
 		line.setAttribute('stroke', p_lineColor);
 		p_parent.appendChild(line);
 	}
@@ -322,7 +340,7 @@ function BaseChartApi(p_element, p_settings, p_data) {
 		}
 	}
 
-	this.DrawChartAreas = function() {
+	this.DrawChartAreas = function () {
 		// General Setup
 		// Currently used for the Background & Title.
 		// #### Background ####
@@ -363,7 +381,10 @@ function BaseChartApi(p_element, p_settings, p_data) {
 			this.g_legend.baseFontSize = 2 * baseFontSize;
 		}
 	}
+
+
 	// #### User Interfaces ####
+
 
 	this.Render = function () {
 		console.log("#### Rendering Chart ####");
@@ -412,6 +433,14 @@ function BaseChartApi(p_element, p_settings, p_data) {
 		else {
 			this.g_canvas.remove();
 		}
+	}
+
+	this.DrawCorrelation = function () {
+		throw Error("Correlation not implemented for this chart type.");
+	}
+
+	this.CreateCorrelation = function () {
+		throw Error("Correlation not implemented for this chart type.");
 	}
 };
 

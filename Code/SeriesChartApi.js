@@ -155,7 +155,7 @@ function SeriesChartApi(p_element, p_settings, p_data) {
 		return true
 	}
 
-	this.DrawChartContainer = function() {
+	this.DrawChartContainer = function () {
 		// #### Chart Area ####
 		// Chart Area Reference
 		if (typeof this.g_chartArea.reference != Element) {
@@ -342,6 +342,54 @@ function SeriesChartApi(p_element, p_settings, p_data) {
 		this.DrawChartContainer();
 		this.DrawChart();
 	}
+
+	this.processCorrelation = function (p_function, p_colorNB) {
+		if (p_function == undefined || p_function == null) {
+			return false;
+		}
+
+		// Account for Axis
+		var startX = 1 - ((p_function[0] - this.g_yAxis.min) / (this.g_yAxis.max - this.g_yAxis.min));
+		var endX = 1 - ((p_function[1] - this.g_yAxis.min) / (this.g_yAxis.max - this.g_yAxis.min));
+
+		// Draw line
+		this.DottedLine(this.g_chartArea.reference,
+			this.g_chartArea.minX,
+			this.g_chartArea.minY + (this.g_chartArea.maxY * (startX)),
+			this.g_chartArea.minX + this.g_chartArea.maxX,
+			this.g_chartArea.minY + (this.g_chartArea.maxY * (endX)),
+			this.g_chartArea.color[p_colorNB]);
+
+	}
+
+	// Overwrite base function to prevent error.
+	this.DrawCorrelation = function () {
+		var widget = new ChartApiCorrelaitonWidget(this.g_data.category);
+		console.log("### Render Correlation ###");
+		this.processCorrelation(widget.GetCorrelation(this.g_data.value7), 6);
+		this.processCorrelation(widget.GetCorrelation(this.g_data.value6), 5);
+		this.processCorrelation(widget.GetCorrelation(this.g_data.value5), 4);
+		this.processCorrelation(widget.GetCorrelation(this.g_data.value4), 3);
+		this.processCorrelation(widget.GetCorrelation(this.g_data.value3), 2);
+		this.processCorrelation(widget.GetCorrelation(this.g_data.value2), 1);
+		this.processCorrelation(widget.GetCorrelation(this.g_data.value), 0);
+
+		return widget;
+	}
+
+	this.CreateCorrelation = function () {
+		var widget = new ChartApiCorrelaitonWidget(this.g_data.category);
+		console.log("### Calculating Correlation ###");
+		widget.GetCorrelation(this.g_data.value7);
+		widget.GetCorrelation(this.g_data.value6);
+		widget.GetCorrelation(this.g_data.value5);
+		widget.GetCorrelation(this.g_data.value4);
+		widget.GetCorrelation(this.g_data.value3);
+		widget.GetCorrelation(this.g_data.value2);
+		widget.GetCorrelation(this.g_data.value);
+
+		return widget;
+	}
 };
 
 // Child object
@@ -354,7 +402,7 @@ function LineChartApi(p_element, p_settings, p_data) {
 	// Helper function for DrawChart()
 	this.DrawPoint = function (p_colorNB, p_data) {
 		if (p_data == undefined || p_data == null) {
-			return false
+			return false;
 		}
 		// Points in Graph
 		var nextY = 1 - ((p_data[0] - this.g_yAxis.min) / (this.g_yAxis.max - this.g_yAxis.min));

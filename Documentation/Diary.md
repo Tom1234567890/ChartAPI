@@ -1,3 +1,23 @@
+###09-Sep-16
+
+Code for the correlation has been completed.
+
+This involves a new object called ChartApiCorrelaitonWidget (I am SOO good at naming things today).
+
+Create the widget with the X Axis and plug in the data for each series of data. It will then return the start and end point of a correlation.
+
+By using the function DrawCorrelation(); on any chart it will draw the correlation of every series it has.
+
+If the chart type dosn't support this (Looking at the perportion charts here) it will throw an exception by default.
+
+A simmilar process is used to create the widget object, CreateCorrelation();, this is of no relation to DrawCorrelation however can be used to get the correlation without drawing it (No idea why you would want this)
+
+VERY importantly these functions return the widget object, which i will be continuing to work on. The user will be able to interact with the widget in order to draw out the correlation coefficient ect.
+
+For now I'll be checking in my changes as the scatter chart is finally polished and complete.
+
+Incidentally there where two changes to the base object, all lines will now be 1px rarther then 2px because it looks better, and there is an additional function to draw out dotted lines.
+
 ###05-Sep-16
 
 Alright, Epithany complete.

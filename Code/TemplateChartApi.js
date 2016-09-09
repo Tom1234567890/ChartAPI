@@ -25,6 +25,14 @@ function ____ChartApi(p_element, p_settings, p_data) {
 		// Function used by each child chart.
 		this.DrawChart();
 	};
+
+	/* Overwrite base function to prevent error.
+	this.DrawCorrelation = function () {
+		var widget = new ChartApiCorrelaitonWidget(this.g_data.category);
+		this.processCorrelation(widget.GetCorrelation(this.g_data.value), 0);
+
+		return widget;
+	}*/
 }
 
 // Child object

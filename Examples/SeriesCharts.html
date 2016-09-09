@@ -5,10 +5,11 @@
 	<title>Cumulative Months in Year</title>
 	<script type="text/javascript" src="../Code/ChartApi.js"></script>
 	<script type="text/javascript" src="../Code/SeriesChartApi.js"></script>
+	<script type="text/javascript" src="../Code/ChartApiCorrelationWidget.js"></script>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 </head>
 <body style="margin:0px;">
-	<svg id="body" width="600" height="500" style="border:1px solid black;"></svg>
+	<!--<svg id="body" width="600" height="500" style="border:1px solid black;"></svg>-->
 	<script>
 		var settings =
 			{
@@ -40,7 +41,7 @@
 					altBackground: "#FFFFFF",
 					truncation: 3,
 					yAxisDividers: 8,
-					color: ["blue", "Green", "Black", "purple"]
+					color: ["blue", "Green", "Black", "purple", "#f90"]
 				},
 				YAxis:
 					{
@@ -68,7 +69,7 @@
 				,
 				Legend:
 					{
-						names: ["Cumulative\nMonths", "Months\nRemaining", "Value of\nMonth", "Days in\nMonth"],
+						names: ["Cumulative\nMonths", "Months\nRemaining", "Value of\nMonth", "Days in\nMonth", "I like\nOranges"],
 						text: "Legend",
 						background: "White",
 						altBackground: "#ff9900"
@@ -86,18 +87,22 @@
 					],
 				Value3:
 					[
-						1, 1, 1, 1, , null, 1, null, 1, 1, 1, 1
+						1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1
 					],
 				Value4:
 					[
 						31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31
+					],
+				Value5:
+					[
+						15, 34, 21, 7, 4, 22, 13, 11, 25, 21, 14,17
 					],
 				Category:
 					[
 						'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
 					]
 			}
-		var body = document.getElementById("body"); //*/document.body;
+		var body = /*document.getElementById("body"); //*/document.body;
 		var chart = new LineChartApi(body, settings, data);
 
 		try {
@@ -109,7 +114,20 @@
 			alert("!!Uncaught Error :" + err.message);
 		}
 
-		// charts.Remove(true);
+		//chart.DrawCorrelation();
+
+		var chart = new ScatterChartApi(body, settings, data);
+
+		try {
+			if (!chart.Render()) {
+				alert("Err0r");
+			}
+		}
+		catch (err) {
+			alert("!!Uncaught Error :" + err.message);
+		}
+
+		chart.DrawCorrelation();
 	</script>
 </body>
 </html>
