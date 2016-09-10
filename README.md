@@ -26,3 +26,5 @@ It's not good enough to simply be told “Crime is at an all time high”. We ne
 - Scatter Graph. (Series chart)
   This chart allows for the plotting of points ready for analysis using other areas of the product.
   Simmilar to the line chart, however the lines need to be drawn according to correlation.
+- Line of best fit (Widget)
+  This allows users to detect correlation in their data, expose the trend on the chart itself or within the widget and furthermore provide analysis to the validity of the correlation.
