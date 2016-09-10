@@ -8,7 +8,9 @@
 - The glorious base functionality expansion:
 
 Truncation
+
 Text Overlap detection.
+
 Chart Logging
 
 - The beautiful user interaction addition.
