@@ -1,22 +1,106 @@
+###10-Sep-16
+
+Spellchecked yesterdays entry... whoops.
+
+Following on from yesterday's work I've refactored the code again.
+
+All the HTML interaction (I.E: setting up the SVG element and the low level functions that create the SVG elements) have been moved out of the base chart object and into the widget object. 
+
+The widget object will be used to render the correlation widget, and any other future widgets. I could have duplicated the code, however this is a much neater method that will stand the test of time.
+
+I have made two changes to the base API while working at this.
+
+There is a new function called EventRect(). It took a lot of work to do this, so I'm  pretty proud.
+
+This function will create a rectangle that will call an event to be handled on the API object. This allows for hover effects and clicking functionality, finally making the API interact-able.
+
+One of the earliest design decisions I made, before even making my second commit, was to switch from using the HTML5 Canvas element to the HTML5 SVG element. While this has also created a host of other improvements, the key deciding point is this functionality. I'm glad to be able to say I've made the correct decision today, when I am finally able to take advantage of this.
+
+A change I made last night but failed to document is the DottedLine() function on the base object. This is identical to Line(), with an additional attribute to bring in some dashes. The series charts will be using this to draw out the correlated lines, and I imagine it will be useful in the future.
+
+The final change is to the text function. This now splits the text into different lines (Denoted by '\n') and draws them underneath each other. It also takes an additional, but not required, number that defines the line spacing. I feel this line spacing needs improvement however I don't see a good method for this just yet. (Perhaps using bounding boxes & increments?)
+
+This don't currently support vertical text, as additional development will be needed, however I see that coming in use in the immediate future.
+
+With regards to the correlation widget, the calculation has now been made to test the level of correlation. I have been using online resources in order to obtain the calculations required, however I don't think that I am using the best method at the moment. If you look at the example charts, the purple line on the scatter graph is seems exceedingly uncorrelated, whereas I would  expect about 80% correlation.
+
+Since this is my first foray into statistical analysis I will be fact checking this thoroughly,  and intend to visit the library tomorrow.
+
+However, regardless of the method, it's safe to say the technology works. We can plot several different correlations and support them with a function and a coefficient.
+
+So that is what has been done. What has yet to be worked on is also extremely interesting:
+
+- The fabulous testing automation
+
+Simply put, this will use JavaScript to input a verity of data, settings and to stretch and squash the chart to obtain various results. This will speed up testing, and lend itself to future automation. This will need to be done before the rest of the changes to ensure the product is fully functional as exists.
+
+- The grand data refactoring.
+
+Data held as arrays in named objects really doesn't make much sense. If this project is to be taken seriously it needs to use a greater standard. This is most parts research and background development.
+
+This also ties into two other interesting ideas, the idea of an inconsistent X Axis and the idea of using dates for the X Axis.
+
+An inconsistent X Axis would mean significant changes, however I feel it will be useful in many scientific situations. This will mean recreating the X Axis similar to the Y Axis in many cases.
+
+An date based axis is also very interesting when considering 
+
+- The harrowing object encapsulation.
+This is simply a tasks to reduce the technical debt currently in the system. At the moment the project has a large amount of public variables, leading to writing out this. before an absurdly large amount of objects. This needs to be cut down where possible, perhaps by using local copies effectively.
+
+This is also a good chance to review the code so far, something I haven't done properly since splitting the project into three tiers of objects.
+
+Finally the naming of a large amount of variables will be called into question thanks to the new base widget object.
+
+- The glorious base functionality expansion.
+
+While working with the base API thanks to the proportion chart I've listed a couple of improvements that could be made in order to speed up future development:
+
+Truncation
+
+We need to truncate the Y Axis in the base object, in a similar style to the low level HTML functions.
+
+Text Overlap detection.
+
+Used to prevent X & Y axis text from overlapping. This is currently implemented in the proportion chart's Y axis, however needs to become universal.
+
+Also this doesn't quite work with vertical text.
+
+Chart Logging
+
+The amount of chart messages is getting absurd. There needs to be a debug mode or similar.
+
+This is also a good time to make sure everything that should have a message, does have a message.
+
+- The beautiful user interaction addition.
+
+As a result of the recent breakthrough with the legend intractability, the older charts need to be brought up to speed with hover text (If possible), hover effects and legend interactivity.
+
+Legend interactivity is a normal industry standard, where pressing on the legend will hide / show the relevant series.
+
+I'm not entirely sold on this method – I can see the removal of disagreeing data becoming prevalent if we allow for this, however there is also the need to focus on the data that matters. Hopefully I will make my mind up before coming to this task.
+
+
+All these changes will take a long time to complete, some more so than others, but by paying this technological debt now we can make a huge saving in the future. 
+
 ###09-Sep-16
 
-Code for the correlation has been completed.
+Code for the correlation widget has been completed.
 
 This involves a new object called ChartApiCorrelaitonWidget (I am SOO good at naming things today).
 
 Create the widget with the X Axis and plug in the data for each series of data. It will then return the start and end point of a correlation.
 
-By using the function DrawCorrelation(); on any chart it will draw the correlation of every series it has.
+By using the function DrawCorrelation() on any chart it will draw the correlation of every series it has.
 
-If the chart type dosn't support this (Looking at the perportion charts here) it will throw an exception by default.
+If the chart type doesn't support this (Looking at the proportion charts here) it will throw an exception by default.
 
-A simmilar process is used to create the widget object, CreateCorrelation();, this is of no relation to DrawCorrelation however can be used to get the correlation without drawing it (No idea why you would want this)
+A similar process is used to create the widget object, CreateCorrelation(), this is of no relation to DrawCorrelation however can be used to get the correlation without drawing it (No idea why you would want this)
 
-VERY importantly these functions return the widget object, which i will be continuing to work on. The user will be able to interact with the widget in order to draw out the correlation coefficient ect.
+VERY importantly these functions return the widget object, which I will be continuing to work on. The user will be able to interact with the widget in order to draw out the correlation coefficient ect.
 
 For now I'll be checking in my changes as the scatter chart is finally polished and complete.
 
-Incidentally there where two changes to the base object, all lines will now be 1px rarther then 2px because it looks better, and there is an additional function to draw out dotted lines.
+Incidentally there where two changes to the base object, all lines will now be 1px rather then 2px because it looks better, and there is an additional function to draw out dotted lines.
 
 ###05-Sep-16
 

@@ -145,7 +145,7 @@ function ChartApiCorrelaitonWidget(p_categories, p_element, p_settings) {
 		}
 	}
 
-	this.DrawBaseAreas = function() {
+	this.DrawBaseAreas = function () {
 		// General Setup
 		// Currently used for the Background & Title.
 		// #### Background ####
@@ -154,7 +154,7 @@ function ChartApiCorrelaitonWidget(p_categories, p_element, p_settings) {
 		this.Rect(this.g_canvas, 0, 0, 100, 20, this.g_title.background, "#000");
 		// Title Text
 		var textArea = this.TextArea(null, this.g_title.font, this.g_title.fontSize, false);
-		this.g_title.reference = this.Text(textArea, 50, 10, this.g_title.text);
+		this.g_title.reference = this.Text(textArea, 50, 10, this.g_title.text, 8);
 	}
 
 	this.DrawLegend = function () {
@@ -189,13 +189,11 @@ function ChartApiCorrelaitonWidget(p_categories, p_element, p_settings) {
 		var i = 0;
 
 		while (i < 7 && this.g_legend.names[i] != undefined && this.g_legend.names[i] != null) {
-			var text = this.g_legend.names[i].split('\n');
-			for (var i2 = 0; i2 < text.length; i2++) {
-				this.Text(textArea,
+			this.Text(textArea,
 				this.g_legend.minX + (this.g_legend.maxX / 2),
-				this.g_legend.minY + ((i + 1.6) * (this.g_legend.maxY / 8)) + (i2 * 3),
-				text[i2]);
-			}
+				this.g_legend.minY + ((i + 1.6) * (this.g_legend.maxY / 8)),
+				this.g_legend.names[i]);
+			
 
 			var pointBorder = this.g_ChartArea.pointBorder == null || this.g_ChartArea.pointBorder[i] == null ? this.g_ChartArea.color[i] : this.g_ChartArea.pointBorder[i];
 
@@ -206,13 +204,15 @@ function ChartApiCorrelaitonWidget(p_categories, p_element, p_settings) {
 				this.g_ChartArea.color[i],
 				pointBorder);
 
-			this.Rect(this.g_legend.reference,
+			this.EventRect(this.g_legend.reference,
 				this.g_legend.minX,
 				this.g_legend.minY + ((i + 1) * (this.g_legend.maxY / 8)),
 				this.g_legend.maxX,
 				this.g_legend.maxY / 8,
-				null,
-				'#000000');
+				"click",
+				this.LegendClick,
+				this,
+				(i + 1));
 
 			i++;
 		}
@@ -221,7 +221,7 @@ function ChartApiCorrelaitonWidget(p_categories, p_element, p_settings) {
 
 	this.DrawFormula = function (p_series) {
 		// First series are added last
-		var series = g_results.length - 1 - p_series;
+		var series = g_results.length - p_series;
 		// Formula Reference
 		this.g_formula.reference = this.Group();
 		// Formula Area
@@ -240,7 +240,7 @@ function ChartApiCorrelaitonWidget(p_categories, p_element, p_settings) {
 
 	this.DrawCorrelation = function (p_series) {
 		// First series are added last
-		var series = g_results.length - 1 - p_series;
+		var series = g_results.length - p_series;
 		// Formula Reference
 		this.g_correlation.reference = this.Group();
 		// Formula Area
@@ -251,14 +251,44 @@ function ChartApiCorrelaitonWidget(p_categories, p_element, p_settings) {
 			this.g_correlation.maxY,
 			this.g_correlation.background,
 			"#000");
-
 		// Formula Text
+		var text = (Math.abs(g_results[series][3]) * 100).toFixed(1) + '%';
+
+		// Idiot's guide to a Switch statement
+		var value = Math.abs(g_results[series][3]);
+
+		if (value == 1) {
+			text += "\nPerfect Correlation";
+		} else if (value > 0.8) {
+			text += "\nStrong Correlation";
+		} else if (value > 0.5){
+			text += "\nCorrelation";
+		} else if (value > 0.3) {
+			text += "\nWeak Correlation";
+		} else if (value >= 0) {
+			text += "\nNo Correlation";
+		}
+		else {
+			text = "Error computing correlation."
+		}
+
+		
 		var textArea = this.TextArea(null, this.g_correlation.font, this.g_correlation.fontSize, false);
-		this.Text(textArea, this.g_correlation.minX + (this.g_correlation.maxX / 2), this.g_correlation.minY + (this.g_correlation.maxY / 2), g_results[series][3]);
+		this.Text(textArea,
+			this.g_correlation.minX + (this.g_correlation.maxX / 2),
+			this.g_correlation.minY + (this.g_correlation.maxY / 2),
+			text,
+			8);
 	}
 
 	// #### User Interfaces ####
 
+
+	this.LegendClick = function (e) {
+		var clickValue = e.target.getAttribute('clickValue');
+		this.DrawFormula(clickValue);
+		this.DrawCorrelation(clickValue);
+	}
 
 	// Get's the start and end points to draw the line of best fit.
 	// Uses simplest technique, OLS
@@ -286,7 +316,6 @@ function ChartApiCorrelaitonWidget(p_categories, p_element, p_settings) {
 		var maxX = 11;//Math.max.apply(null, p_categories);
 		var minX = 0;//Math.min.apply(null, p_categories);
 
-		// #### Y Axis ####
 
 		var meanY = 0;
 		{
@@ -319,12 +348,59 @@ function ChartApiCorrelaitonWidget(p_categories, p_element, p_settings) {
 		var start = (M * minX) + C;
 		var end = (M * maxX) + C;
 
-		// Get correlation
-		var correlation = Math.random(); //TODO: Exactly the opposite of this
+		// #### Correlation ####
+		// Standard Deviation of X
+		var deviationX = 0;
+		{
+			var top = 0;
+			var bottom = 0;
+			var i = 0;
 
-		// Add to results
+			while (i < p_categories.length) {
+				top += Math.pow(i - meanX, 2);
+
+				i++;
+			}
+			bottom = i - 1;
+
+			deviationX = Math.sqrt(top / bottom);
+		}
+		// Standard Deviation of Y
+		var deviationY = 0;
+		{
+			var top = 0;
+			var bottom = 0;
+			var i = 0;
+
+			while (i < p_data.length) {
+				top += Math.pow(p_data[i] - meanY, 2);
+
+				i++;
+			}
+			bottom = i - 1;
+
+			deviationY = Math.sqrt(top / bottom);
+		}
+		// Correlation
+		var correlation = 0;
+		{
+			var i = 0;
+
+			while (i < p_categories.length) {
+				correlation += ((i - meanX) / deviationX)
+					* ((p_data[i] - meanY) / deviationY);
+
+				i++;
+			}
+
+			var bottom = i - 1;
+
+			correlation = correlation / bottom;
+		}
+
+		// #### Results ####
 		// (+ .toFixed(2) truncates to the final 2 and removes the trailing 0's
-		g_results[g_results.length] = [start, end, "y = " + (+M.toFixed(2)) + "X + " + (+C.toFixed(2)), (+ correlation.toFixed(5))];
+		g_results[g_results.length] = [start, end, "y = " + (+M.toFixed(2)) + "X + " + (+C.toFixed(2)), (+correlation.toFixed(5))];
 
 		return [start, end, "y = " + M + " X + " + C, correlation];
 	}
@@ -341,8 +417,8 @@ function ChartApiCorrelaitonWidget(p_categories, p_element, p_settings) {
 			this.SizeFonts();
 			this.DrawBaseAreas();
 
-			this.DrawFormula(0);
-			this.DrawCorrelation(0);
+			this.DrawFormula(1);
+			this.DrawCorrelation(1);
 			this.DrawLegend();
 
 			console.log("#### Render Complete ####");

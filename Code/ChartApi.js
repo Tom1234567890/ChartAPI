@@ -82,6 +82,32 @@ function ChartApiWidget(p_element) {
 		return rect;
 	}
 
+	this.EventRect = function (p_parent, p_minX, p_minY, p_maxX, p_maxY, p_eventName, p_eventHandler, p_scope, p_clickValue) {
+		if (p_parent == null || p_parent == undefined) {
+			p_parent = this.g_canvas;
+		}
+
+		var rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+		rect.setAttribute('x', p_minX + '%');
+		rect.setAttribute('y', p_minY + '%');
+		rect.setAttribute('width', p_maxX + '%');
+		rect.setAttribute('height', p_maxY + '%');
+		rect.setAttribute('clickValue', p_clickValue);
+		rect.setAttribute('fill-opacity', 0);
+		p_parent.appendChild(rect);
+
+		// Add event listner
+		{
+			var scopedEventHandler = function (e) { p_eventHandler.apply(p_scope, [e]); };
+			if (document.addEventListener)
+				rect.addEventListener(p_eventName, scopedEventHandler, false);
+			else if (document.attachEvent)
+				rect.attachEvent("on" + p_eventName, scopedEventHandler);
+		}
+		// Return a reference of the element.
+		return rect;
+	}
+
 	this.Line = function (p_parent, p_x1, p_y1, p_x2, p_y2, p_lineColor) {
 		if (p_lineColor == "Transparent") p_background = null;
 		if (p_lineColor == null) return;
@@ -138,18 +164,28 @@ function ChartApiWidget(p_element) {
 		return p_parent.appendChild(text);
 	}
 
-	this.Text = function (p_parent, p_x, p_y, p_message) {
+	this.Text = function (p_parent, p_x, p_y, p_message, p_spacing) {
 		if (p_parent == null || p_parent == undefined) {
 			p_parent = this.g_canvas;
 		}
+		if (p_spacing == null || p_spacing == undefined) {
+			p_spacing = 3;
+		}
 
-		var text = document.createElementNS("http://www.w3.org/2000/svg", "tspan");
-		text.setAttribute('x', p_x + '%');
-		text.setAttribute('y', p_y + '%');
-		text.setAttribute('text-anchor', 'middle');
+		var message = p_message.split('\n');
+		// Create a new line at each point
+		for (var i = 0; i < message.length; i++) {
+			var text = document.createElementNS("http://www.w3.org/2000/svg", "tspan");
+			text.setAttribute('x', p_x + '%');
+			text.setAttribute('y', p_y + (i * p_spacing) + '%');
+			text.setAttribute('text-anchor', 'middle');
 
-		text.innerHTML = p_message;
-		return p_parent.appendChild(text);
+			text.innerHTML = message[i];
+			p_parent.appendChild(text);
+		}
+		
+		// Cannot return a tspan
+		return;
 	}
 
 	this.Circle = function (p_parent, p_x, p_y, p_radius, p_background, p_lineColor) {
@@ -372,7 +408,7 @@ function BaseChartApi(p_element, p_settings, p_data) {
 		this.Rect(this.g_canvas, 0, 0, 100, 20, this.g_title.background, "#000");
 		// Title this.Text
 		var textArea = this.TextArea(null, this.g_title.font, this.g_title.fontSize, false);
-		this.g_title.reference = this.Text(textArea, 50, 10, this.g_title.text);
+		this.g_title.reference = this.Text(textArea, 50, 10, this.g_title.text, 8);
 	}
 
 	this.SizeFonts = function () {
