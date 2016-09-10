@@ -45,6 +45,7 @@ An inconsistent X Axis would mean significant changes, however I feel it will be
 An date based axis is also very interesting when considering 
 
 - The harrowing object encapsulation.
+
 This is simply a tasks to reduce the technical debt currently in the system. At the moment the project has a large amount of public variables, leading to writing out this. before an absurdly large amount of objects. This needs to be cut down where possible, perhaps by using local copies effectively.
 
 This is also a good chance to review the code so far, something I haven't done properly since splitting the project into three tiers of objects.
@@ -77,7 +78,7 @@ As a result of the recent breakthrough with the legend intractability, the older
 
 Legend interactivity is a normal industry standard, where pressing on the legend will hide / show the relevant series.
 
-I'm not entirely sold on this method – I can see the removal of disagreeing data becoming prevalent if we allow for this, however there is also the need to focus on the data that matters. Hopefully I will make my mind up before coming to this task.
+I'm not entirely sold on this method â€“ I can see the removal of disagreeing data becoming prevalent if we allow for this, however there is also the need to focus on the data that matters. Hopefully I will make my mind up before coming to this task.
 
 
 All these changes will take a long time to complete, some more so than others, but by paying this technological debt now we can make a huge saving in the future. 
@@ -116,7 +117,7 @@ This opens the project up to more interesting analysis & features, whereas the l
 
 So I have created the scatter graph in order to begin this process. This took about 10 min thanks to all the work I've done with templates and the quite handy line chart code.
 
-Next I've bumped the correlation widget upwards in the WorkList™ so that the scatter graph can work with it. At the moment the scatter graph will not be useful without it.
+Next I've bumped the correlation widget upwards in the WorkListâ„¢ so that the scatter graph can work with it. At the moment the scatter graph will not be useful without it.
 
 ###03-Sep-16
 
