@@ -9,7 +9,7 @@
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 </head>
 <body style="margin:0px;">
-	<!--<svg id="body" width="600" height="500" style="border:1px solid black;"></svg>-->
+	<!--<svg id="body" width="500" height="200" style="border:1px solid black;"></svg>-->
 	<script>
 		var settings =
 			{
@@ -126,8 +126,9 @@
 		catch (err) {
 			alert("!!Uncaught Error :" + err.message);
 		}
-
-		chart.DrawCorrelation();
+		var body = /*document.getElementById("body"); //*/document.body;
+		var widget = chart.DrawCorrelation(body, settings);
+		widget.Render();
 	</script>
 </body>
 </html>

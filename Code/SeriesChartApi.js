@@ -93,68 +93,6 @@ function SeriesChartApi(p_element, p_settings, p_data) {
 		}
 	}
 
-	this.DrawLegend = function () {
-		// #### Legend ####
-		if (this.g_legend == undefined) return false;
-		// Legend Reference
-		this.g_legend.reference = this.Group();
-		// Legend Area
-		this.Rect(this.g_legend.reference,
-			this.g_legend.minX,
-			this.g_legend.minY,
-			this.g_legend.maxX,
-			this.g_legend.maxY,
-			this.g_legend.background,
-			"#000");
-		// Legend Alt Background
-		this.Rect(this.g_legend.reference,
-			this.g_legend.minX,
-			this.g_legend.minY,
-			this.g_legend.maxX,
-			this.g_legend.maxY / 8,
-			this.g_legend.altBackground,
-			"#000");
-		// Legend this.Text
-		var textArea = this.TextArea(this.g_legend.reference, this.g_legend.font, this.g_legend.fontSize, false);
-		this.Text(textArea,
-			this.g_legend.minX + (this.g_legend.maxX / 2),
-			this.g_legend.minY + (this.g_legend.maxY / 16),
-			this.g_legend.text);
-		// Legend Categories
-		var textArea = this.TextArea(this.g_legend.reference, this.g_legend.font, this.g_legend.baseFontSize, false);
-		var i = 0;
-
-		while (i < 7 && this.g_legend.names[i] != undefined && this.g_legend.names[i] != null) {
-			var text = this.g_legend.names[i].split('\n');
-			for (var i2 = 0; i2 < text.length; i2++) {
-				this.Text(textArea,
-				this.g_legend.minX + (this.g_legend.maxX / 2),
-				this.g_legend.minY + ((i + 1.6) * (this.g_legend.maxY / 8)) + (i2 * 3),
-				text[i2]);
-			}
-
-			var pointBorder = this.g_chartArea.pointBorder == null || this.g_chartArea.pointBorder[i] == null ? this.g_chartArea.color[i] : this.g_chartArea.pointBorder[i];
-
-			this.Circle(this.g_legend.reference,
-				this.g_legend.minX + (this.g_legend.maxX / 2),
-				this.g_legend.minY + ((i + 1.2) * (this.g_legend.maxY / 8)),
-				0.75,
-				this.g_chartArea.color[i],
-				pointBorder);
-
-			this.Rect(this.g_legend.reference,
-				this.g_legend.minX,
-				this.g_legend.minY + ((i + 1) * (this.g_legend.maxY / 8)),
-				this.g_legend.maxX,
-				this.g_legend.maxY / 8,
-				null,
-				'#000000');
-
-			i++;
-		}
-		return true
-	}
-
 	this.DrawChartContainer = function () {
 		// #### Chart Area ####
 		// Chart Area Reference
@@ -363,8 +301,8 @@ function SeriesChartApi(p_element, p_settings, p_data) {
 	}
 
 	// Overwrite base function to prevent error.
-	this.DrawCorrelation = function () {
-		var widget = new ChartApiCorrelaitonWidget(this.g_data.category);
+	this.DrawCorrelation = function (p_element, p_settings) {
+		var widget = new ChartApiCorrelaitonWidget(this.g_data.category, p_element, p_settings);
 		console.log("### Render Correlation ###");
 		this.processCorrelation(widget.GetCorrelation(this.g_data.value7), 6);
 		this.processCorrelation(widget.GetCorrelation(this.g_data.value6), 5);
@@ -377,8 +315,8 @@ function SeriesChartApi(p_element, p_settings, p_data) {
 		return widget;
 	}
 
-	this.CreateCorrelation = function () {
-		var widget = new ChartApiCorrelaitonWidget(this.g_data.category);
+	this.CreateCorrelation = function (p_element, p_settings) {
+		var widget = new ChartApiCorrelaitonWidget(this.g_data.category, p_element, p_settings);
 		console.log("### Calculating Correlation ###");
 		widget.GetCorrelation(this.g_data.value7);
 		widget.GetCorrelation(this.g_data.value6);

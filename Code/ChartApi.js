@@ -1,15 +1,15 @@
 // Base Object
-// This is required to use any given chart
+// Contains all the interaction with the HTML
 
-function BaseChartApi(p_element, p_settings, p_data) {
+function ChartApiWidget(p_element) {
 	// Initialisation
 
 	// Global Variables with Defaults
 	this.g_canvas;
 	this.g_size;
 	this.g_data;
-	var g_sizeX = 500;
-	var g_sizeY = 500;
+	var g_sizeX = 400;
+	var g_sizeY = 400;
 	var g_strokeWidth = "1px";
 	var g_fontSuffix = "pt";
 	var g_baseFont = "TimesNewRoman";
@@ -43,73 +43,6 @@ function BaseChartApi(p_element, p_settings, p_data) {
 		console.error("Error Creating Chart Object: " + ex.message);
 		return;
 	}
-
-	// #### Workings Objects ####
-
-	this.g_title =
-		{
-			// This reference is for the text directly, unlike the other references for the parent element.
-			reference: null,
-			text: "",
-			font: null,
-			background: "#FFFFFF",
-			fontSize: null,
-			minX: 0,
-			minY: 0,
-			maxX: 0,
-			maxY: 0
-		}
-	this.g_chartArea =
-		{
-			reference: null,
-			color: ["#000000"],
-			canvasBackground: "#FFFFFF",
-			background: "#FFFFFF",
-			pointBorder: null,
-			altBackground: null,
-			yAxisDividers: 5,
-			truncation: 3,
-			minX: 0,
-			minY: 0,
-			maxX: 0,
-			maxY: 0
-		}
-	this.g_yAxis =
-		{
-			reference: null,
-			text: "",
-			fontSize: null,
-			baseFontSize: null,
-			font: null,
-			background: "#FFFFFF",
-			titleBackground: null,
-			spokeColor: "#808080",
-			min: 0,
-			max: 0,
-			minX: 0,
-			minY: 0,
-			maxX: 0,
-			maxY: 0
-		}
-	this.g_xAxis =
-		{
-			reference: null,
-			text: "",
-			fontSize: null,
-			baseFontSize: null,
-			font: null,
-			background: "#FFFFFF",
-			titleBackground: null,
-			spokeColor: "#808080",
-			spacing: 0,
-			minX: 0,
-			minY: 0,
-			maxX: 0,
-			maxY: 0
-		}
-	// Optional Input
-	this.g_logo;
-	this.g_legend;
 
 
 	// #### Helper Functions ####
@@ -243,6 +176,96 @@ function BaseChartApi(p_element, p_settings, p_data) {
 		return p_parent.appendChild(circle);
 	}
 
+	// #### User Interfaces ####
+
+
+	this.Render = function () {
+		throw Error("Rendering not implemented for this widget.");
+	}
+
+	this.Remove = function (p_keepParent) {
+		throw Error("Rendering not implemented for this widget.");
+	}
+}
+
+
+// Base chart object
+// This is required to use any given chart
+
+
+function BaseChartApi(p_element, p_settings, p_data) {
+
+
+	// Setup Inheritence
+
+
+	this.base = ChartApiWidget;
+	this.base(p_element);
+
+
+	// #### Workings Objects ####
+
+	this.g_title =
+		{
+			// This reference is for the text directly, unlike the other references for the parent element.
+			reference: null,
+			text: "",
+			font: null,
+			background: "#FFFFFF",
+			fontSize: null
+		}
+	this.g_chartArea =
+		{
+			reference: null,
+			color: ["#000000"],
+			canvasBackground: "#FFFFFF",
+			background: "#FFFFFF",
+			pointBorder: null,
+			altBackground: null,
+			yAxisDividers: 5,
+			truncation: 3,
+			minX: 0,
+			minY: 0,
+			maxX: 0,
+			maxY: 0
+		}
+	this.g_yAxis =
+		{
+			reference: null,
+			text: "",
+			fontSize: null,
+			baseFontSize: null,
+			font: null,
+			background: "#FFFFFF",
+			titleBackground: null,
+			spokeColor: "#808080",
+			min: 0,
+			max: 0,
+			minX: 0,
+			minY: 0,
+			maxX: 0,
+			maxY: 0
+		}
+	this.g_xAxis =
+		{
+			reference: null,
+			text: "",
+			fontSize: null,
+			baseFontSize: null,
+			font: null,
+			background: "#FFFFFF",
+			titleBackground: null,
+			spokeColor: "#808080",
+			spacing: 0,
+			minX: 0,
+			minY: 0,
+			maxX: 0,
+			maxY: 0
+		}
+	// Optional Input
+	this.g_logo;
+	this.g_legend
+
 
 	// #### Functions ####
 
@@ -340,7 +363,7 @@ function BaseChartApi(p_element, p_settings, p_data) {
 		}
 	}
 
-	this.DrawChartAreas = function () {
+	this.DrawBaseAreas = function () {
 		// General Setup
 		// Currently used for the Background & Title.
 		// #### Background ####
@@ -349,7 +372,7 @@ function BaseChartApi(p_element, p_settings, p_data) {
 		this.Rect(this.g_canvas, 0, 0, 100, 20, this.g_title.background, "#000");
 		// Title this.Text
 		var textArea = this.TextArea(null, this.g_title.font, this.g_title.fontSize, false);
-		this.g_chartArea.reference = this.Text(textArea, 50, 10, this.g_title.text)
+		this.g_title.reference = this.Text(textArea, 50, 10, this.g_title.text);
 	}
 
 	this.SizeFonts = function () {
@@ -382,6 +405,68 @@ function BaseChartApi(p_element, p_settings, p_data) {
 		}
 	}
 
+	this.DrawLegend = function () {
+		// #### Legend ####
+		if (this.g_legend == undefined) return false;
+		// Legend Reference
+		this.g_legend.reference = this.Group();
+		// Legend Area
+		this.Rect(this.g_legend.reference,
+			this.g_legend.minX,
+			this.g_legend.minY,
+			this.g_legend.maxX,
+			this.g_legend.maxY,
+			this.g_legend.background,
+			"#000");
+		// Legend Alt Background
+		this.Rect(this.g_legend.reference,
+			this.g_legend.minX,
+			this.g_legend.minY,
+			this.g_legend.maxX,
+			this.g_legend.maxY / 8,
+			this.g_legend.altBackground,
+			"#000");
+		// Legend this.Text
+		var textArea = this.TextArea(this.g_legend.reference, this.g_legend.font, this.g_legend.fontSize, false);
+		this.Text(textArea,
+			this.g_legend.minX + (this.g_legend.maxX / 2),
+			this.g_legend.minY + (this.g_legend.maxY / 16),
+			this.g_legend.text);
+		// Legend Categories
+		var textArea = this.TextArea(this.g_legend.reference, this.g_legend.font, this.g_legend.baseFontSize, false);
+		var i = 0;
+
+		while (i < 7 && this.g_legend.names[i] != undefined && this.g_legend.names[i] != null) {
+			var text = this.g_legend.names[i].split('\n');
+			for (var i2 = 0; i2 < text.length; i2++) {
+				this.Text(textArea,
+				this.g_legend.minX + (this.g_legend.maxX / 2),
+				this.g_legend.minY + ((i + 1.6) * (this.g_legend.maxY / 8)) + (i2 * 3),
+				text[i2]);
+			}
+
+			var pointBorder = this.g_chartArea.pointBorder == null || this.g_chartArea.pointBorder[i] == null ? this.g_chartArea.color[i] : this.g_chartArea.pointBorder[i];
+
+			this.Circle(this.g_legend.reference,
+				this.g_legend.minX + (this.g_legend.maxX / 2),
+				this.g_legend.minY + ((i + 1.2) * (this.g_legend.maxY / 8)),
+				0.75,
+				this.g_chartArea.color[i],
+				pointBorder);
+
+			this.Rect(this.g_legend.reference,
+				this.g_legend.minX,
+				this.g_legend.minY + ((i + 1) * (this.g_legend.maxY / 8)),
+				this.g_legend.maxX,
+				this.g_legend.maxY / 8,
+				null,
+				'#000000');
+
+			i++;
+		}
+		return true
+	}
+
 
 	// #### User Interfaces ####
 
@@ -402,7 +487,7 @@ function BaseChartApi(p_element, p_settings, p_data) {
 
 			console.log("#### Drawing Chart ####");
 
-			this.DrawChartAreas();
+			this.DrawBaseAreas();
 			this.BaseDrawChart();
 
 			console.log("#### Render Complete ####");
@@ -414,7 +499,6 @@ function BaseChartApi(p_element, p_settings, p_data) {
 			console.error(ex.message);
 
 			if (this.g_canvas != null && this.g_canvas != undefined) {
-				console.log("Removing Canvas");
 				this.Remove(true);
 				return false;
 			}
