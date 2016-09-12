@@ -5,6 +5,7 @@ function ChartApiCorrelaitonWidget(p_categories, p_element, p_settings) {
 
 	this.base = ChartApiWidget;
 	this.base(p_element);
+	var me = this;
 
 	var g_results = [];
 	var g_categories = p_categories;
@@ -57,7 +58,7 @@ function ChartApiCorrelaitonWidget(p_categories, p_element, p_settings) {
 	// #### Functions ####
 
 
-	this.LoadSettings = function () {
+	var LoadSettings = function () {
 		console.log("Receiving Settings:");
 		if (p_settings.BaseFont != undefined) {
 			console.log("Base Font Received");
@@ -65,19 +66,19 @@ function ChartApiCorrelaitonWidget(p_categories, p_element, p_settings) {
 		}
 		if (p_settings.ChartArea != undefined) {
 			console.log("ChartArea Received");
-			if (p_settings.ChartArea.canvasBackground != undefined) this.g_ChartArea.canvasBackground = p_settings.ChartArea.canvasBackground;
-			if (p_settings.ChartArea.background != undefined) this.g_ChartArea.background = p_settings.ChartArea.background;
-			if (p_settings.ChartArea.color != undefined) this.g_ChartArea.color = p_settings.ChartArea.color;
+			if (p_settings.ChartArea.canvasBackground != undefined) me.g_ChartArea.canvasBackground = p_settings.ChartArea.canvasBackground;
+			if (p_settings.ChartArea.background != undefined) me.g_ChartArea.background = p_settings.ChartArea.background;
+			if (p_settings.ChartArea.color != undefined) me.g_ChartArea.color = p_settings.ChartArea.color;
 		}
 		if (p_settings.Title != undefined) {
 			console.log("Title Received");
-			if (p_settings.Title.text != undefined) this.g_title.text = p_settings.Title.text;
-			if (p_settings.Title.font != undefined) this.g_title.font = p_settings.Title.font;
-			if (p_settings.Title.background != undefined) this.g_title.background = p_settings.Title.background;
+			if (p_settings.Title.text != undefined) me.g_title.text = p_settings.Title.text;
+			if (p_settings.Title.font != undefined) me.g_title.font = p_settings.Title.font;
+			if (p_settings.Title.background != undefined) me.g_title.background = p_settings.Title.background;
 		}
 		if (p_settings.Legend != undefined && p_settings.Legend.names != undefined) {
 			console.log("Legend Received");
-			this.g_legend =
+			me.g_legend =
 				{
 					text: p_settings.Legend.text != undefined ? p_settings.Legend.text : null,
 					font: p_settings.Legend.font != undefined ? p_settings.Legend.font : g_baseFont,
@@ -94,123 +95,123 @@ function ChartApiCorrelaitonWidget(p_categories, p_element, p_settings) {
 		}
 	}
 
-	this.SizeFonts = function () {
+	var SizeFonts = function () {
 		// #### Chart Font Sizes ####
-		var baseFontSize = this.g_size / 100;
+		var baseFontSize = me.g_size / 100;
 		// Title
-		if (this.g_title.fontSize == null || this.g_title.fontSize < 0) {
-			this.g_title.fontSize = 5 * baseFontSize;
+		if (me.g_title.fontSize == null || me.g_title.fontSize < 0) {
+			me.g_title.fontSize = 5 * baseFontSize;
 		}
 		// Legend
-		if (this.g_legend.fontSize == null || this.g_legend.fontSize < 0) {
-			this.g_legend.fontSize = 3 * baseFontSize;
+		if (me.g_legend.fontSize == null || me.g_legend.fontSize < 0) {
+			me.g_legend.fontSize = 3 * baseFontSize;
 		}
-		if (this.g_legend.baseFontSize == null || this.g_legend.baseFontSize < 0) {
-			this.g_legend.baseFontSize = 2 * baseFontSize;
+		if (me.g_legend.baseFontSize == null || me.g_legend.baseFontSize < 0) {
+			me.g_legend.baseFontSize = 2 * baseFontSize;
 		}
 		// Formula
-		if (this.g_formula.fontSize == null || this.g_formula.fontSize < 0) {
-			this.g_formula.fontSize = 5 * baseFontSize;
+		if (me.g_formula.fontSize == null || me.g_formula.fontSize < 0) {
+			me.g_formula.fontSize = 5 * baseFontSize;
 		}
 		// Correlation
-		if (this.g_correlation.fontSize == null || this.g_correlation.fontSize < 0) {
-			this.g_correlation.fontSize = 5 * baseFontSize;
+		if (me.g_correlation.fontSize == null || me.g_correlation.fontSize < 0) {
+			me.g_correlation.fontSize = 5 * baseFontSize;
 		}
 	}
 
-	this.SizeWidget = function () {
+	var SizeWidget = function () {
 		// #### Formula ####
-		this.g_formula.minX = 0;
-		this.g_formula.minY = 20;
-		this.g_formula.maxX = 80;
-		this.g_formula.maxY = 40;
-		if (this.g_legend == undefined) {
-			this.g_formula.maxX += 20;
+		me.g_formula.minX = 0;
+		me.g_formula.minY = 20;
+		me.g_formula.maxX = 80;
+		me.g_formula.maxY = 40;
+		if (me.g_legend == undefined) {
+			me.g_formula.maxX += 20;
 		}
 		// #### Correlation ####
-		this.g_correlation.minX = 0;
-		this.g_correlation.minY = 60;
-		this.g_correlation.maxX = 80;
-		this.g_correlation.maxY = 40;
-		if (this.g_legend == undefined) {
-			this.g_correlation.maxX += 20;
+		me.g_correlation.minX = 0;
+		me.g_correlation.minY = 60;
+		me.g_correlation.maxX = 80;
+		me.g_correlation.maxY = 40;
+		if (me.g_legend == undefined) {
+			me.g_correlation.maxX += 20;
 		}
 		// #### Legend ####
-		if (this.g_legend != undefined) {
+		if (me.g_legend != undefined) {
 			// Dimentions
-			this.g_legend.minX = 80;
-			this.g_legend.minY = 20;
-			this.g_legend.maxX = 20;
-			this.g_legend.maxY = 80;
+			me.g_legend.minX = 80;
+			me.g_legend.minY = 20;
+			me.g_legend.maxX = 20;
+			me.g_legend.maxY = 80;
 		}
 	}
 
-	this.DrawBaseAreas = function () {
+	var DrawBaseAreas = function () {
 		// General Setup
 		// Currently used for the Background & Title.
 		// #### Background ####
-		this.Rect(this.g_canvas, 0, 0, 100, 100, this.g_ChartArea.canvasBackground, "#000");
+		me.Rect(me.g_canvas, 0, 0, 100, 100, me.g_ChartArea.canvasBackground, "#000");
 		// #### Title ####
-		this.Rect(this.g_canvas, 0, 0, 100, 20, this.g_title.background, "#000");
+		me.Rect(me.g_canvas, 0, 0, 100, 20, me.g_title.background, "#000");
 		// Title Text
-		var textArea = this.TextArea(null, this.g_title.font, this.g_title.fontSize, false);
-		this.g_title.reference = this.Text(textArea, 50, 10, this.g_title.text, 8);
+		var textArea = me.TextArea(null, me.g_title.font, me.g_title.fontSize, false);
+		me.g_title.reference = me.Text(textArea, 50, 10, me.g_title.text, 8);
 	}
 
-	this.DrawLegend = function () {
+	var DrawLegend = function () {
 		// #### Legend ####
-		if (this.g_legend == undefined) return false;
+		if (me.g_legend == undefined) return false;
 		// Legend Reference
-		this.g_legend.reference = this.Group();
+		me.g_legend.reference = me.Group();
 		// Legend Area
-		this.Rect(this.g_legend.reference,
-			this.g_legend.minX,
-			this.g_legend.minY,
-			this.g_legend.maxX,
-			this.g_legend.maxY,
-			this.g_legend.background,
+		me.Rect(me.g_legend.reference,
+			me.g_legend.minX,
+			me.g_legend.minY,
+			me.g_legend.maxX,
+			me.g_legend.maxY,
+			me.g_legend.background,
 			"#000");
 		// Legend Alt Background
-		this.Rect(this.g_legend.reference,
-			this.g_legend.minX,
-			this.g_legend.minY,
-			this.g_legend.maxX,
-			this.g_legend.maxY / 8,
-			this.g_legend.altBackground,
+		me.Rect(me.g_legend.reference,
+			me.g_legend.minX,
+			me.g_legend.minY,
+			me.g_legend.maxX,
+			me.g_legend.maxY / 8,
+			me.g_legend.altBackground,
 			"#000");
-		// Legend this.Text
-		var textArea = this.TextArea(this.g_legend.reference, this.g_legend.font, this.g_legend.fontSize, false);
-		this.Text(textArea,
-			this.g_legend.minX + (this.g_legend.maxX / 2),
-			this.g_legend.minY + (this.g_legend.maxY / 16),
-			this.g_legend.text);
+		// Legend me.Text
+		var textArea = me.TextArea(me.g_legend.reference, me.g_legend.font, me.g_legend.fontSize, false);
+		me.Text(textArea,
+			me.g_legend.minX + (me.g_legend.maxX / 2),
+			me.g_legend.minY + (me.g_legend.maxY / 16),
+			me.g_legend.text);
 		// Legend Categories
-		var textArea = this.TextArea(this.g_legend.reference, this.g_legend.font, this.g_legend.baseFontSize, false);
+		var textArea = me.TextArea(me.g_legend.reference, me.g_legend.font, me.g_legend.baseFontSize, false);
 		var i = 0;
 
-		while (i < 7 && this.g_legend.names[i] != undefined && this.g_legend.names[i] != null) {
-			this.Text(textArea,
-				this.g_legend.minX + (this.g_legend.maxX / 2),
-				this.g_legend.minY + ((i + 1.6) * (this.g_legend.maxY / 8)),
-				this.g_legend.names[i]);
+		while (i < 7 && me.g_legend.names[i] != undefined && me.g_legend.names[i] != null) {
+			me.Text(textArea,
+				me.g_legend.minX + (me.g_legend.maxX / 2),
+				me.g_legend.minY + ((i + 1.6) * (me.g_legend.maxY / 8)),
+				me.g_legend.names[i]);
 			
 
-			var pointBorder = this.g_ChartArea.pointBorder == null || this.g_ChartArea.pointBorder[i] == null ? this.g_ChartArea.color[i] : this.g_ChartArea.pointBorder[i];
+			var pointBorder = me.g_ChartArea.pointBorder == null || me.g_ChartArea.pointBorder[i] == null ? me.g_ChartArea.color[i] : me.g_ChartArea.pointBorder[i];
 
-			this.Circle(this.g_legend.reference,
-				this.g_legend.minX + (this.g_legend.maxX / 2),
-				this.g_legend.minY + ((i + 1.2) * (this.g_legend.maxY / 8)),
+			me.Circle(me.g_legend.reference,
+				me.g_legend.minX + (me.g_legend.maxX / 2),
+				me.g_legend.minY + ((i + 1.2) * (me.g_legend.maxY / 8)),
 				0.75,
-				this.g_ChartArea.color[i],
+				me.g_ChartArea.color[i],
 				pointBorder);
 
-			this.EventRect(this.g_legend.reference,
-				this.g_legend.minX,
-				this.g_legend.minY + ((i + 1) * (this.g_legend.maxY / 8)),
-				this.g_legend.maxX,
-				this.g_legend.maxY / 8,
+			me.EventRect(me.g_legend.reference,
+				me.g_legend.minX,
+				me.g_legend.minY + ((i + 1) * (me.g_legend.maxY / 8)),
+				me.g_legend.maxX,
+				me.g_legend.maxY / 8,
 				"click",
-				this.LegendClick,
+				me.LegendClick,
 				this,
 				(i + 1));
 
@@ -219,37 +220,37 @@ function ChartApiCorrelaitonWidget(p_categories, p_element, p_settings) {
 		return true
 	}
 
-	this.DrawFormula = function (p_series) {
+	var DrawFormula = function (p_series) {
 		// First series are added last
 		var series = g_results.length - p_series;
 		// Formula Reference
-		this.g_formula.reference = this.Group();
+		me.g_formula.reference = me.Group();
 		// Formula Area
-		this.Rect(this.g_formula.reference,
-			this.g_formula.minX,
-			this.g_formula.minY,
-			this.g_formula.maxX,
-			this.g_formula.maxY,
-			this.g_formula.background,
+		me.Rect(me.g_formula.reference,
+			me.g_formula.minX,
+			me.g_formula.minY,
+			me.g_formula.maxX,
+			me.g_formula.maxY,
+			me.g_formula.background,
 			"#000");
 
 		// Formula Text
-		var textArea = this.TextArea(this.g_formula.reference, this.g_formula.font, this.g_formula.fontSize, false);
-		this.Text(textArea, this.g_formula.minX + (this.g_formula.maxX / 2), this.g_formula.minY + (this.g_formula.maxY / 2), g_results[series][2]);
+		var textArea = me.TextArea(me.g_formula.reference, me.g_formula.font, me.g_formula.fontSize, false);
+		me.Text(textArea, me.g_formula.minX + (me.g_formula.maxX / 2), me.g_formula.minY + (me.g_formula.maxY / 2), g_results[series][2]);
 	}
 
-	this.DrawCorrelation = function (p_series) {
+	var DrawCorrelation = function (p_series) {
 		// First series are added last
 		var series = g_results.length - p_series;
 		// Formula Reference
-		this.g_correlation.reference = this.Group();
+		me.g_correlation.reference = me.Group();
 		// Formula Area
-		this.Rect(this.g_correlation.reference,
-			this.g_correlation.minX,
-			this.g_correlation.minY,
-			this.g_correlation.maxX,
-			this.g_correlation.maxY,
-			this.g_correlation.background,
+		me.Rect(me.g_correlation.reference,
+			me.g_correlation.minX,
+			me.g_correlation.minY,
+			me.g_correlation.maxX,
+			me.g_correlation.maxY,
+			me.g_correlation.background,
 			"#000");
 		// Formula Text
 		var text = (Math.abs(g_results[series][3]) * 100).toFixed(1) + '%';
@@ -273,10 +274,10 @@ function ChartApiCorrelaitonWidget(p_categories, p_element, p_settings) {
 		}
 
 		
-		var textArea = this.TextArea(null, this.g_correlation.font, this.g_correlation.fontSize, false);
-		this.Text(textArea,
-			this.g_correlation.minX + (this.g_correlation.maxX / 2),
-			this.g_correlation.minY + (this.g_correlation.maxY / 2),
+		var textArea = me.TextArea(null, me.g_correlation.font, me.g_correlation.fontSize, false);
+		me.Text(textArea,
+			me.g_correlation.minX + (me.g_correlation.maxX / 2),
+			me.g_correlation.minY + (me.g_correlation.maxY / 2),
 			text,
 			8);
 	}
@@ -286,8 +287,8 @@ function ChartApiCorrelaitonWidget(p_categories, p_element, p_settings) {
 
 	this.LegendClick = function (e) {
 		var clickValue = e.target.getAttribute('clickValue');
-		this.DrawFormula(clickValue);
-		this.DrawCorrelation(clickValue);
+		DrawFormula(clickValue);
+		DrawCorrelation(clickValue);
 	}
 
 	// Get's the start and end points to draw the line of best fit.
@@ -412,14 +413,14 @@ function ChartApiCorrelaitonWidget(p_categories, p_element, p_settings) {
 				console.log("Unable to create chart - no parent element");
 			}
 
-			this.LoadSettings();
-			this.SizeWidget();
-			this.SizeFonts();
-			this.DrawBaseAreas();
+			LoadSettings();
+			SizeWidget();
+			SizeFonts();
+			DrawBaseAreas();
 
-			this.DrawFormula(1);
-			this.DrawCorrelation(1);
-			this.DrawLegend();
+			DrawFormula(1);
+			DrawCorrelation(1);
+			DrawLegend();
 
 			console.log("#### Render Complete ####");
 

@@ -41,7 +41,6 @@ function ChartApiWidget(p_element) {
 	catch (ex) {
 		// Error, but let the processes continue.
 		console.error("Error Creating Chart Object: " + ex.message);
-		return;
 	}
 
 
@@ -183,7 +182,7 @@ function ChartApiWidget(p_element) {
 			text.innerHTML = message[i];
 			p_parent.appendChild(text);
 		}
-		
+
 		// Cannot return a tspan
 		return;
 	}
@@ -211,35 +210,22 @@ function ChartApiWidget(p_element) {
 
 		return p_parent.appendChild(circle);
 	}
-
-	// #### User Interfaces ####
-
-
-	this.Render = function () {
-		throw Error("Rendering not implemented for this widget.");
-	}
-
-	this.Remove = function (p_keepParent) {
-		throw Error("Rendering not implemented for this widget.");
-	}
 }
-
 
 // Base chart object
 // This is required to use any given chart
 
 
 function BaseChartApi(p_element, p_settings, p_data) {
-
-
 	// Setup Inheritence
 
 
 	this.base = ChartApiWidget;
 	this.base(p_element);
+	var me = this;
 
 
-	// #### Workings Objects ####
+	// #### Settings Objects ####
 
 	this.g_title =
 		{
@@ -253,7 +239,7 @@ function BaseChartApi(p_element, p_settings, p_data) {
 	this.g_chartArea =
 		{
 			reference: null,
-			color: ["#000000"],
+			color: ["#000000", "#000000", "#000000", "#000000", "#000000", "#000000", "#000000"],
 			canvasBackground: "#FFFFFF",
 			background: "#FFFFFF",
 			pointBorder: null,
@@ -298,45 +284,50 @@ function BaseChartApi(p_element, p_settings, p_data) {
 			maxX: 0,
 			maxY: 0
 		}
-	// Optional Input
-	this.g_logo;
-	this.g_legend
+	this.g_legend = undefined;// Optional Input
 
 
 	// #### Functions ####
 
 
-	this.LoadChartData = function () {
-		if (this.g_data == null) {
-			// First time setup, essentially just error check
-			if (p_data == null || p_data == undefined || p_data.Value == undefined || p_data.Category == undefined) {
-				throw Error("Data object not Received");
-			}
-			if (p_data.Value[0] == undefined) {
-				throw Error("Data not Received");
-			}
-			if (p_data.Category[0] == undefined) {
-				throw Error("Categories not Received");
-			}
-			this.g_data =
-				{
-					category: p_data.Category,
-					value: p_data.Value,
-					value2: p_data.Value2,
-					value3: p_data.Value3,
-					value4: p_data.Value4,
-					value5: p_data.Value5,
-					value6: p_data.Value6,
-					value7: p_data.Value7
-				}
+	function SizeFonts() {
+		// #### Chart Font Sizes ####
+		var baseFontSize = me.g_size / 100;
+		// Title
+		if (me.g_title.fontSize == null || me.g_title.fontSize < 0) {
+			me.g_title.fontSize = 5 * baseFontSize;
 		}
-		else {
-			// TODO: Ajax?
+		// YAxis
+		if (me.g_yAxis.fontSize == null || me.g_yAxis.fontSize < 0) {
+			me.g_yAxis.fontSize = 4 * baseFontSize;
+		}
+		if (me.g_yAxis.baseFontSize == null || me.g_yAxis.baseFontSize < 0) {
+			me.g_yAxis.baseFontSize = 3 * baseFontSize;
+		}
+		// XAxis
+		if (me.g_xAxis.fontSize == null || me.g_xAxis.fontSize < 0) {
+			me.g_xAxis.fontSize = 4 * baseFontSize;
+		}
+		if (me.g_xAxis.baseFontSize == null || me.g_xAxis.baseFontSize < 0) {
+			me.g_xAxis.baseFontSize = 3 * baseFontSize;
+		}
+		// Legend
+		if (me.g_legend != undefined && me.g_legend != null) {
+			if (me.g_legend.fontSize == null || me.g_legend.fontSize < 0) {
+				me.g_legend.fontSize = 3 * baseFontSize;
+			}
+			if (me.g_legend.baseFontSize == null || me.g_legend.baseFontSize < 0) {
+				me.g_legend.baseFontSize = 2 * baseFontSize;
+			}
 		}
 	}
 
 	// Load in details from the input object
-	this.LoadSettings = function () {
+	function LoadSettings() {
+		if (p_settings == undefined && p_settings == null) {
+			console.warn("No Settings Received");
+			return;
+		}
 		console.log("Receiving Settings:");
 		if (p_settings.BaseFont != undefined) {
 			console.log("Base Font Received");
@@ -344,23 +335,23 @@ function BaseChartApi(p_element, p_settings, p_data) {
 		}
 		if (p_settings.Title != undefined) {
 			console.log("Title Received");
-			if (p_settings.Title.text != undefined) this.g_title.text = p_settings.Title.text;
-			if (p_settings.Title.font != undefined) this.g_title.font = p_settings.Title.font;
-			if (p_settings.Title.background != undefined) this.g_title.background = p_settings.Title.background;
+			if (p_settings.Title.text != undefined) me.g_title.text = p_settings.Title.text;
+			if (p_settings.Title.font != undefined) me.g_title.font = p_settings.Title.font;
+			if (p_settings.Title.background != undefined) me.g_title.background = p_settings.Title.background;
 		}
 		if (p_settings.ChartArea != undefined) {
 			console.log("ChartArea Received");
-			if (p_settings.ChartArea.canvasBackground != undefined) this.g_chartArea.canvasBackground = p_settings.ChartArea.canvasBackground;
-			if (p_settings.ChartArea.background != undefined) this.g_chartArea.background = p_settings.ChartArea.background;
-			if (p_settings.ChartArea.color != undefined) this.g_chartArea.color = p_settings.ChartArea.color;
-			if (p_settings.ChartArea.pointBorder != undefined) this.g_chartArea.pointBorder = p_settings.ChartArea.pointBorder;
-			if (p_settings.ChartArea.altBackground != undefined) this.g_chartArea.altBackground = p_settings.ChartArea.altBackground;
-			if (p_settings.ChartArea.yAxisDividers != undefined) this.g_chartArea.yAxisDividers = p_settings.ChartArea.yAxisDividers;
-			if (p_settings.ChartArea.truncation != undefined) this.g_chartArea.truncation = p_settings.ChartArea.truncation;
+			if (p_settings.ChartArea.canvasBackground != undefined) me.g_chartArea.canvasBackground = p_settings.ChartArea.canvasBackground;
+			if (p_settings.ChartArea.background != undefined) me.g_chartArea.background = p_settings.ChartArea.background;
+			if (p_settings.ChartArea.color != undefined) me.g_chartArea.color = p_settings.ChartArea.color;
+			if (p_settings.ChartArea.pointBorder != undefined) me.g_chartArea.pointBorder = p_settings.ChartArea.pointBorder;
+			if (p_settings.ChartArea.altBackground != undefined) me.g_chartArea.altBackground = p_settings.ChartArea.altBackground;
+			if (p_settings.ChartArea.yAxisDividers != undefined) me.g_chartArea.yAxisDividers = p_settings.ChartArea.yAxisDividers;
+			if (p_settings.ChartArea.truncation != undefined) me.g_chartArea.truncation = p_settings.ChartArea.truncation;
 		}
 		if (p_settings.Legend != undefined && p_settings.Legend.names != undefined) {
 			console.log("Legend Received");
-			this.g_legend =
+			me.g_legend =
 				{
 					text: p_settings.Legend.text != undefined ? p_settings.Legend.text : null,
 					font: p_settings.Legend.font != undefined ? p_settings.Legend.font : g_baseFont,
@@ -377,136 +368,61 @@ function BaseChartApi(p_element, p_settings, p_data) {
 		}
 		if (p_settings.YAxis != undefined) {
 			console.log("YAxis Received");
-			if (p_settings.YAxis.text != undefined) this.g_yAxis.text = p_settings.YAxis.text;
-			if (p_settings.YAxis.font != undefined) this.g_yAxis.font = p_settings.YAxis.font;
-			if (p_settings.YAxis.min != undefined) this.g_yAxis.min = p_settings.YAxis.min;
-			if (p_settings.YAxis.max != undefined) this.g_yAxis.max = p_settings.YAxis.max;
-			if (p_settings.YAxis.background != undefined) this.g_yAxis.background = p_settings.YAxis.background;
-			if (p_settings.YAxis.fontSize != undefined) this.g_yAxis.fontSize = p_settings.YAxis.fontSize;
-			if (p_settings.YAxis.baseFontSize != undefined) this.g_yAxis.baseFontSize = p_settings.YAxis.baseFontSize;
-			if (p_settings.YAxis.titleBackground != undefined) this.g_yAxis.titleBackground = p_settings.YAxis.titleBackground;
-			if (p_settings.YAxis.spokeColor != undefined) this.g_yAxis.spokeColor = p_settings.YAxis.spokeColor;
+			if (p_settings.YAxis.text != undefined) me.g_yAxis.text = p_settings.YAxis.text;
+			if (p_settings.YAxis.font != undefined) me.g_yAxis.font = p_settings.YAxis.font;
+			if (p_settings.YAxis.min != undefined) me.g_yAxis.min = p_settings.YAxis.min;
+			if (p_settings.YAxis.max != undefined) me.g_yAxis.max = p_settings.YAxis.max;
+			if (p_settings.YAxis.background != undefined) me.g_yAxis.background = p_settings.YAxis.background;
+			if (p_settings.YAxis.fontSize != undefined) me.g_yAxis.fontSize = p_settings.YAxis.fontSize;
+			if (p_settings.YAxis.baseFontSize != undefined) me.g_yAxis.baseFontSize = p_settings.YAxis.baseFontSize;
+			if (p_settings.YAxis.titleBackground != undefined) me.g_yAxis.titleBackground = p_settings.YAxis.titleBackground;
+			if (p_settings.YAxis.spokeColor != undefined) me.g_yAxis.spokeColor = p_settings.YAxis.spokeColor;
 		}
 		if (p_settings.XAxis != undefined) {
 			console.log("XAxis Received");
-			if (p_settings.XAxis.text != undefined) this.g_xAxis.text = p_settings.XAxis.text;
-			if (p_settings.XAxis.font != undefined) this.g_xAxis.font = p_settings.XAxis.font;
-			if (p_settings.XAxis.background != undefined) this.g_xAxis.background = p_settings.XAxis.background;
-			if (p_settings.XAxis.fontSize != undefined) this.g_xAxis.fontSize = p_settings.XAxis.fontSize;
-			if (p_settings.XAxis.baseFontSize != undefined) this.g_xAxis.baseFontSize = p_settings.XAxis.baseFontSize;
-			if (p_settings.XAxis.titleBackground != undefined) this.g_xAxis.titleBackground = p_settings.XAxis.titleBackground;
-			if (p_settings.XAxis.spokeColor != undefined) this.g_xAxis.spokeColor = p_settings.XAxis.spokeColor;
+			if (p_settings.XAxis.text != undefined) me.g_xAxis.text = p_settings.XAxis.text;
+			if (p_settings.XAxis.font != undefined) me.g_xAxis.font = p_settings.XAxis.font;
+			if (p_settings.XAxis.background != undefined) me.g_xAxis.background = p_settings.XAxis.background;
+			if (p_settings.XAxis.fontSize != undefined) me.g_xAxis.fontSize = p_settings.XAxis.fontSize;
+			if (p_settings.XAxis.baseFontSize != undefined) me.g_xAxis.baseFontSize = p_settings.XAxis.baseFontSize;
+			if (p_settings.XAxis.titleBackground != undefined) me.g_xAxis.titleBackground = p_settings.XAxis.titleBackground;
+			if (p_settings.XAxis.spokeColor != undefined) me.g_xAxis.spokeColor = p_settings.XAxis.spokeColor;
 		}
 	}
 
-	this.DrawBaseAreas = function () {
+	// Draw out the title & background
+	function DrawBaseAreas() {
 		// General Setup
 		// Currently used for the Background & Title.
 		// #### Background ####
-		this.Rect(this.g_canvas, 0, 0, 100, 100, this.g_chartArea.canvasBackground, "#000");
+		me.Rect(me.g_canvas, 0, 0, 100, 100, me.g_chartArea.canvasBackground, "#000");
 		// #### Title ####
-		this.Rect(this.g_canvas, 0, 0, 100, 20, this.g_title.background, "#000");
-		// Title this.Text
-		var textArea = this.TextArea(null, this.g_title.font, this.g_title.fontSize, false);
-		this.g_title.reference = this.Text(textArea, 50, 10, this.g_title.text, 8);
-	}
-
-	this.SizeFonts = function () {
-		// #### Chart Font Sizes ####
-		var baseFontSize = this.g_size / 100;
-		// Title
-		if (this.g_title.fontSize == null || this.g_title.fontSize < 0) {
-			this.g_title.fontSize = 5 * baseFontSize;
-		}
-		// YAxis
-		if (this.g_yAxis.fontSize == null || this.g_yAxis.fontSize < 0) {
-			this.g_yAxis.fontSize = 4 * baseFontSize;
-		}
-		if (this.g_yAxis.baseFontSize == null || this.g_yAxis.baseFontSize < 0) {
-			this.g_yAxis.baseFontSize = 3 * baseFontSize;
-		}
-		// XAxis
-		if (this.g_xAxis.fontSize == null || this.g_xAxis.fontSize < 0) {
-			this.g_xAxis.fontSize = 4 * baseFontSize;
-		}
-		if (this.g_xAxis.baseFontSize == null || this.g_xAxis.baseFontSize < 0) {
-			this.g_xAxis.baseFontSize = 3 * baseFontSize;
-		}
-		// Legend
-		if (this.g_legend.fontSize == null || this.g_legend.fontSize < 0) {
-			this.g_legend.fontSize = 3 * baseFontSize;
-		}
-		if (this.g_legend.baseFontSize == null || this.g_legend.baseFontSize < 0) {
-			this.g_legend.baseFontSize = 2 * baseFontSize;
-		}
-	}
-
-	this.DrawLegend = function () {
-		// #### Legend ####
-		if (this.g_legend == undefined) return false;
-		// Legend Reference
-		this.g_legend.reference = this.Group();
-		// Legend Area
-		this.Rect(this.g_legend.reference,
-			this.g_legend.minX,
-			this.g_legend.minY,
-			this.g_legend.maxX,
-			this.g_legend.maxY,
-			this.g_legend.background,
-			"#000");
-		// Legend Alt Background
-		this.Rect(this.g_legend.reference,
-			this.g_legend.minX,
-			this.g_legend.minY,
-			this.g_legend.maxX,
-			this.g_legend.maxY / 8,
-			this.g_legend.altBackground,
-			"#000");
-		// Legend this.Text
-		var textArea = this.TextArea(this.g_legend.reference, this.g_legend.font, this.g_legend.fontSize, false);
-		this.Text(textArea,
-			this.g_legend.minX + (this.g_legend.maxX / 2),
-			this.g_legend.minY + (this.g_legend.maxY / 16),
-			this.g_legend.text);
-		// Legend Categories
-		var textArea = this.TextArea(this.g_legend.reference, this.g_legend.font, this.g_legend.baseFontSize, false);
-		var i = 0;
-
-		while (i < 7 && this.g_legend.names[i] != undefined && this.g_legend.names[i] != null) {
-			var text = this.g_legend.names[i].split('\n');
-			for (var i2 = 0; i2 < text.length; i2++) {
-				this.Text(textArea,
-				this.g_legend.minX + (this.g_legend.maxX / 2),
-				this.g_legend.minY + ((i + 1.6) * (this.g_legend.maxY / 8)) + (i2 * 3),
-				text[i2]);
-			}
-
-			var pointBorder = this.g_chartArea.pointBorder == null || this.g_chartArea.pointBorder[i] == null ? this.g_chartArea.color[i] : this.g_chartArea.pointBorder[i];
-
-			this.Circle(this.g_legend.reference,
-				this.g_legend.minX + (this.g_legend.maxX / 2),
-				this.g_legend.minY + ((i + 1.2) * (this.g_legend.maxY / 8)),
-				0.75,
-				this.g_chartArea.color[i],
-				pointBorder);
-
-			this.Rect(this.g_legend.reference,
-				this.g_legend.minX,
-				this.g_legend.minY + ((i + 1) * (this.g_legend.maxY / 8)),
-				this.g_legend.maxX,
-				this.g_legend.maxY / 8,
-				null,
-				'#000000');
-
-			i++;
-		}
-		return true
+		me.Rect(me.g_canvas, 0, 0, 100, 20, me.g_title.background, "#000");
+		// Title me.Text
+		var textArea = me.TextArea(null, me.g_title.font, me.g_title.fontSize, false);
+		me.g_title.reference = me.Text(textArea, 50, 10, me.g_title.text, 8);
 	}
 
 
 	// #### User Interfaces ####
 
 
+	// Load in the data. Exposed so it can be overwritten for an ajax call.
+	this.LoadChartData = function () {
+		// First time setup, essentially just error check
+		if (p_data == null || p_data == undefined) {
+			throw Error("Data object not Received");
+		}
+		if (p_data[0] == undefined || p_data[0][0] == undefined) {
+			throw Error("Categories not Received");
+		}
+		if (p_data[1] == undefined || p_data[1][0] == undefined) {
+			throw Error("Data not Received");
+		}
+		this.g_data = p_data;
+	}
+
+	// Create the chart
 	this.Render = function () {
 		console.log("#### Rendering Chart ####");
 		try {
@@ -516,14 +432,13 @@ function BaseChartApi(p_element, p_settings, p_data) {
 
 			// Order in which the chart is rendered:
 			this.LoadChartData();
-			this.LoadSettings();
-			this.SizeChart();
-			this.SizeData();
-			this.SizeFonts();
+			LoadSettings();
+
+			SizeFonts();
 
 			console.log("#### Drawing Chart ####");
 
-			this.DrawBaseAreas();
+			DrawBaseAreas();
 			this.BaseDrawChart();
 
 			console.log("#### Render Complete ####");
@@ -531,9 +446,12 @@ function BaseChartApi(p_element, p_settings, p_data) {
 			return true;
 		}
 		catch (ex) {
-			console.error("Stopped Rendering due to exception:")
-			console.error(ex.message);
-
+			console.error("Stopped Rendering due to exception.")
+			if (true) {
+				console.error(ex.message);
+				console.error("Line: " + ex.lineNumber);
+				console.error(ex.stack);
+			}
 			if (this.g_canvas != null && this.g_canvas != undefined) {
 				this.Remove(true);
 				return false;
@@ -542,6 +460,7 @@ function BaseChartApi(p_element, p_settings, p_data) {
 		return true;
 	}
 
+	// Delete the chart
 	this.Remove = function (p_keepParent) {
 		console.log("Removing Chart");
 
@@ -553,14 +472,6 @@ function BaseChartApi(p_element, p_settings, p_data) {
 		else {
 			this.g_canvas.remove();
 		}
-	}
-
-	this.DrawCorrelation = function () {
-		throw Error("Correlation not implemented for this chart type.");
-	}
-
-	this.CreateCorrelation = function () {
-		throw Error("Correlation not implemented for this chart type.");
 	}
 };
 

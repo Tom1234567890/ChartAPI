@@ -6,33 +6,71 @@ function ____ChartApi(p_element, p_settings, p_data) {
 
 	this.base = BaseChartApi;
 	this.base(p_element, p_settings, p_data);
+	var me = this;
 
 	// Drawing Functions
 
-	// Put functions required to draw every ____ chart.
+	function DrawLegend() {
+		// #### Legend ####
+		if (me.g_legend == undefined) return false;
+
+		return true;
+	}
+
+	function DrawChartContainer() { };
+
+	// Set's out proportions of the chart & draws areas around the chart.
+	function SizeChart() { };
+
+	// Set's out any pre-rendering processing of the data.
+	function SizeData() { };
+
 
 	// Master Functions
 
-	// Set's out proportions of the chart & draws areas around the chart.
-	this.SizeChart = function () { };
-
-	// Set's out any pre-rendering processing of the data.
-	this.SizeData = function () { };
 
 	// Higher level function used to draw out the chart.
 	// Essentially a shell to interact with all of the Drawing functions
 	this.BaseDrawChart = function () {
+		SizeChart();
+		SizeData();
+
+
+		if (DrawLegend()) console.log("Legend Rendered");
+		DrawChartContainer(); console.log("Chart Container Rendered");
+
 		// Function used by each child chart.
 		this.DrawChart();
 	};
 
-	/* Overwrite base function to prevent error.
-	this.DrawCorrelation = function () {
-		var widget = new ChartApiCorrelaitonWidget(this.g_data.category);
-		this.processCorrelation(widget.GetCorrelation(this.g_data.value), 0);
+	/*
+	// Draw out correlation on canvas.
+	this.RenderCorrelation = function (p_element, p_settings) {
+
+		var widget = new ChartApiCorrelaitonWidget(this.g_data[0], p_element, p_settings);
+
+		console.log("### Render Correlation ###");
+		for (var i = this.g_data.length - 1; i > 0; i--) {
+			DrawCorrelation(widget.GetCorrelation(this.g_data[i]), i - 1);
+		}
 
 		return widget;
-	}*/
+	}
+
+	// Create correlation without drawing it.
+	this.CreateCorrelation = function (p_element, p_settings) {
+
+		var widget = new ChartApiCorrelaitonWidget(this.g_data[0], p_element, p_settings);
+
+		console.log("### Calculating Correlation ###");
+
+		for (var i = this.g_data.length - 1; i > 0; i--) {
+			widget.GetCorrelation(this.g_data[i]);
+		}
+
+		return widget;
+	}
+	*/
 }
 
 // Child object
@@ -45,7 +83,7 @@ function ____ChartApi(p_element, p_settings, p_data) {
 	this.base(p_element, p_settings, p_data);
 
 	// Helper function for DrawChart()
-	this.DrawPoint = function (p_colorNB, p_data) { };
+	DrawPoint = function (p_colorNB, p_data) { };
 
 	// Function used to plot ____ chart's
 	this.DrawChart = function () { };

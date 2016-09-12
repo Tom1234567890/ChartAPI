@@ -1,3 +1,19 @@
+###12-Sep-16
+
+Halfway!
+
+Yesterday I started work on the testing page, and so far I've got it set up to create a barely valid settings object and plug in a large amount of random data. I'll be expanding upon this later.
+
+I then went on to complete the data refactor. I'm using a simple 2d array where the first array contains the category names. So far this has been more successful, making a lot of operations much easier. This required a lot of work to keep successful however I can already see it making the process easier.
+
+Next the Encapsulation. This was a pain, as the private functions has a different identity to the public functions (?!?!?!?!) however I created a workaround where the object would create a reference to itself that could be accessed by the private functions (Javascript is such a weird language). Of the functions used in creating a chart, 10 of the 18 are now hidden. The remaining are the two used for correlation, the three used in rendering, one used in removing and the over writable LoadChartData function.
+
+The Widget was a huge success, as there is only one public function, everything else has been made private. In total I have removed 683 “this.” to replace them with the identifier “me.”.
+
+So I've looked at the testing page to find absolutely nothing's changed. Yay. 
+
+The nature of making architectural changes is that there is depressingly nothing afterwards to show off.
+
 ###10-Sep-16
 
 Spellchecked yesterdays entry... whoops.
@@ -45,6 +61,7 @@ An inconsistent X Axis would mean significant changes, however I feel it will be
 An date based axis is also very interesting when considering 
 
 - The harrowing object encapsulation.
+
 This is simply a tasks to reduce the technical debt currently in the system. At the moment the project has a large amount of public variables, leading to writing out this. before an absurdly large amount of objects. This needs to be cut down where possible, perhaps by using local copies effectively.
 
 This is also a good chance to review the code so far, something I haven't done properly since splitting the project into three tiers of objects.

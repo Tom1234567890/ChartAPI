@@ -76,36 +76,31 @@
 					}//*/
 			}
 		var data =
-			{
-				Value:
-					[
-						1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12
-					],
-				Value2:
-					[
-						11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0
-					],
-				Value3:
-					[
-						1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1
-					],
-				Value4:
-					[
-						31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31
-					],
-				Value5:
-					[
-						15, 34, 21, 7, 4, 22, 13, 11, 25, 21, 14,17
-					],
-				Category:
-					[
+			[
+				[
 						'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
-					]
-			}
+				],
+				[
+						1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12
+				],
+				[
+						11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0
+				],
+				[
+						1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1
+				],
+				[
+						31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31
+				],
+				[
+						15, 34, 21, 7, 4, 22, 13, 11, 25, 21, 14, 17
+				]
+			]
 		var body = /*document.getElementById("body"); //*/document.body;
-		var chart = new LineChartApi(body, settings, data);
 
 		try {
+			var chart = new LineChartApi(body, settings, data);
+
 			if (!chart.Render()) {
 				alert("Err0r");
 			}
@@ -127,7 +122,7 @@
 			alert("!!Uncaught Error :" + err.message);
 		}
 		var body = /*document.getElementById("body"); //*/document.body;
-		var widget = chart.DrawCorrelation(body, settings);
+		var widget = chart.RenderCorrelation(body, settings);
 		widget.Render();
 	</script>
 </body>
