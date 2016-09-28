@@ -12,7 +12,9 @@ function ChartApiWidget(p_element) {
 	var g_sizeY = 400;
 	var g_strokeWidth = "1px";
 	var g_fontSuffix = "pt";
-	var g_baseFont = "TimesNewRoman";
+	this.g_baseFont = "TimesNewRoman";
+
+	this.DEBUG = false;
 
 	try {
 		if (p_element.tagName.toLowerCase() == "svg") {
@@ -40,11 +42,11 @@ function ChartApiWidget(p_element) {
 	}
 	catch (ex) {
 		// Error, but let the processes continue.
-		console.error("Error Creating Chart Object: " + ex.message);
+		me.Alert("Error Creating Chart Object: " + ex.message, 3);
 	}
 
 
-	// #### Helper Functions ####
+	// #### HTML Functions ####
 
 
 	this.Group = function () {
@@ -54,9 +56,8 @@ function ChartApiWidget(p_element) {
 	}
 
 	this.Rect = function (p_parent, p_minX, p_minY, p_maxX, p_maxY, p_background, p_lineColor) {
-		if (p_background == "Transparent") p_background = null;
-		if (p_lineColor == "Transparent") p_background = null;
-		if (p_lineColor == null && p_background == null) return;
+		if (p_background != null && p_background.toLowerCase() == "transparent") p_background = null;
+		if (p_lineColor != null && p_lineColor.toLowerCase() == "transparent") p_lineColor = null;
 		if (p_parent == null || p_parent == undefined) {
 			p_parent = this.g_canvas;
 		}
@@ -76,36 +77,10 @@ function ChartApiWidget(p_element) {
 			rect.setAttribute('stroke-width', g_strokeWidth);
 			rect.setAttribute('stroke', p_lineColor);
 		}
-		p_parent.appendChild(rect);
+
 		// Return a reference of the element.
-		return rect;
-	}
-
-	this.EventRect = function (p_parent, p_minX, p_minY, p_maxX, p_maxY, p_eventName, p_eventHandler, p_scope, p_clickValue) {
-		if (p_parent == null || p_parent == undefined) {
-			p_parent = this.g_canvas;
-		}
-
-		var rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-		rect.setAttribute('x', p_minX + '%');
-		rect.setAttribute('y', p_minY + '%');
-		rect.setAttribute('width', p_maxX + '%');
-		rect.setAttribute('height', p_maxY + '%');
-		rect.setAttribute('clickValue', p_clickValue);
-		rect.setAttribute('fill-opacity', 0);
-		p_parent.appendChild(rect);
-
-		// Add event listner
-		{
-			var scopedEventHandler = function (e) { p_eventHandler.apply(p_scope, [e]); };
-			if (document.addEventListener)
-				rect.addEventListener(p_eventName, scopedEventHandler, false);
-			else if (document.attachEvent)
-				rect.attachEvent("on" + p_eventName, scopedEventHandler);
-		}
-		// Return a reference of the element.
-		return rect;
-	}
+		return p_parent.appendChild(rect);
+	};
 
 	this.Line = function (p_parent, p_x1, p_y1, p_x2, p_y2, p_lineColor) {
 		if (p_lineColor == "Transparent") p_background = null;
@@ -122,7 +97,7 @@ function ChartApiWidget(p_element) {
 		line.setAttribute('stroke-width', g_strokeWidth);
 		line.setAttribute('stroke', p_lineColor);
 		p_parent.appendChild(line);
-	}
+	};
 
 	this.DottedLine = function (p_parent, p_x1, p_y1, p_x2, p_y2, p_lineColor) {
 		if (p_lineColor == "Transparent") p_background = null;
@@ -140,11 +115,11 @@ function ChartApiWidget(p_element) {
 		line.setAttribute('stroke-dasharray', "10,5");
 		line.setAttribute('stroke', p_lineColor);
 		p_parent.appendChild(line);
-	}
+	};
 
 	this.TextArea = function (p_parent, p_font, p_fontSize, p_isVertical, p_x, p_y) {
 		if (p_font == null || p_font == undefined) {
-			p_font = g_baseFont;
+			p_font = this.g_baseFont;
 		}
 
 		if (p_parent == null || p_parent == undefined) {
@@ -161,14 +136,20 @@ function ChartApiWidget(p_element) {
 			text.setAttribute('style', 'transform-origin: ' + p_x + '% ' + p_y + '%')
 		}
 		return p_parent.appendChild(text);
-	}
+	};
 
 	this.Text = function (p_parent, p_x, p_y, p_message, p_spacing) {
-		if (p_parent == null || p_parent == undefined) {
+		if (p_message == undefined || p_message == null) {
+			return;
+		}
+		if (p_parent == undefined || p_parent == null) {
 			p_parent = this.g_canvas;
 		}
-		if (p_spacing == null || p_spacing == undefined) {
+		if (p_spacing == undefined || p_spacing == null) {
 			p_spacing = 3;
+		}
+		if (typeof (p_message) == "number") {
+			p_message = p_message.toString();
 		}
 
 		var message = p_message.split('\n');
@@ -185,7 +166,7 @@ function ChartApiWidget(p_element) {
 
 		// Cannot return a tspan
 		return;
-	}
+	};
 
 	this.Circle = function (p_parent, p_x, p_y, p_radius, p_background, p_lineColor) {
 		if (p_parent == null || p_parent == undefined) {
@@ -209,7 +190,105 @@ function ChartApiWidget(p_element) {
 		}
 
 		return p_parent.appendChild(circle);
+	};
+
+	this.Event = function (p_element, p_eventName, p_eventHandler, p_clickValue) {
+
+		// Clickvalue
+		if (p_clickValue != null) {
+			p_element.setAttribute('clickValue', p_clickValue);
+		}
+
+		//var scopedEventHandler = function (e) { p_eventHandler.apply(this, [e]); };
+
+		if (document.addEventListener) {
+			p_element.addEventListener(p_eventName, p_eventHandler, false);
+		}
+		else if (document.attachEvent) {
+			p_element.attachEvent("on" + p_eventName, p_eventHandler);
+		}
 	}
+
+	// Helper Functions
+
+	this.Alert = function (p_message, p_iority) {
+
+		if (!this.DEBUG) {
+			if (p_iority < 3) return; p_iority -= 1;
+		}
+
+		switch (p_iority) {
+			case 0:
+				console.info(p_message);
+				break;
+			case 1:
+				console.log(p_message);
+				break;
+			case 2:
+				console.warn(p_message);
+				break;
+			case 3:
+				console.error(p_message);
+			case 4:
+				alert(p_message);
+			default:
+				console.info(p_message);
+		}
+	};
+
+	this.Truncate = function (p_number, p_isSuffixed) {
+		// Get first 5 characters
+		var number = (p_number).toString().split('', this.g_chartArea.truncation).toString().replace(/,/g, '');
+
+		// If the final character is a DP, remove it.
+		if (number.slice(-1) == '.') {
+			number = number.substr(0, number.length - 1);
+		}
+
+		return number;
+	};
+
+	this.FormatDate = function (p_date, p_format) {
+		var day = p_date.getDate();
+		var month = p_date.getMonth() + 1;
+		var year = p_date.getFullYear();
+
+		var theReturn = p_format;
+		theReturn = theReturn.replace(/DD/g, day);
+		theReturn = theReturn.replace(/MM/g, month);
+		theReturn = theReturn.replace(/YYYY/g, year);
+
+		return theReturn;
+	};
+
+	this.TextChain = function (p_textAreas, p_isVertical) {
+		var r1 = p_textAreas[0].getBoundingClientRect();
+
+		for (var i = 1; i < p_textAreas.length; i++) {
+			var r2 = p_textAreas[i].getBoundingClientRect();
+			if (!p_isVertical) {
+				if (!(r2.left > r1.right ||
+					r2.right < r1.left ||
+					r2.top > r1.bottom ||
+					r2.bottom < r1.top)) {
+					// Overlap detected - remove parent
+					p_textAreas[i].remove();
+				} else {
+					r1 = p_textAreas[i].getBoundingClientRect();
+				}
+			} else {
+				if (!(r2.left > r1.bottom ||
+									r2.right < r1.top ||
+									r2.top > r1.right ||
+									r2.bottom < r1.left)) {
+					// Overlap detected - remove parent
+					p_textAreas[i].remove();
+				} else {
+					r1 = p_textAreas[i].getBoundingClientRect();
+				}
+			}
+		}
+	};
 }
 
 // Base chart object
@@ -224,6 +303,12 @@ function BaseChartApi(p_element, p_settings, p_data) {
 	this.base(p_element);
 	var me = this;
 
+	// Holds a reference to the hovertext.
+	var hovertext = null;
+	// The series we are drawing
+	this.drawSeries = -1;
+	// Used to keep references of the legend background elements for hovering
+	var background = new Array();
 
 	// #### Settings Objects ####
 
@@ -234,7 +319,8 @@ function BaseChartApi(p_element, p_settings, p_data) {
 			text: "",
 			font: null,
 			background: "#FFFFFF",
-			fontSize: null
+			fontSize: null,
+			borderColor: "#000000"
 		}
 	this.g_chartArea =
 		{
@@ -249,7 +335,8 @@ function BaseChartApi(p_element, p_settings, p_data) {
 			minX: 0,
 			minY: 0,
 			maxX: 0,
-			maxY: 0
+			maxY: 0,
+			borderColor: "#000000"
 		}
 	this.g_yAxis =
 		{
@@ -266,7 +353,8 @@ function BaseChartApi(p_element, p_settings, p_data) {
 			minX: 0,
 			minY: 0,
 			maxX: 0,
-			maxY: 0
+			maxY: 0,
+			borderColor: "#000000"
 		}
 	this.g_xAxis =
 		{
@@ -279,10 +367,14 @@ function BaseChartApi(p_element, p_settings, p_data) {
 			titleBackground: null,
 			spokeColor: "#808080",
 			spacing: 0,
+			dateFormat: "DD-MM-YYYY",
+			min: null,
+			max: null,
 			minX: 0,
 			minY: 0,
 			maxX: 0,
-			maxY: 0
+			maxY: 0,
+			borderColor: "#000000"
 		}
 	this.g_legend = undefined;// Optional Input
 
@@ -325,38 +417,43 @@ function BaseChartApi(p_element, p_settings, p_data) {
 	// Load in details from the input object
 	function LoadSettings() {
 		if (p_settings == undefined && p_settings == null) {
-			console.warn("No Settings Received");
+			me.Alert("No Settings Received", 3);
 			return;
 		}
-		console.log("Receiving Settings:");
+		me.Alert("Receiving Settings:", 1);
 		if (p_settings.BaseFont != undefined) {
-			console.log("Base Font Received");
-			g_baseFont = p_settings.BaseFont;
+			me.Alert("Base Font Received", 0);
+			me.g_baseFont = p_settings.BaseFont;
 		}
 		if (p_settings.Title != undefined) {
-			console.log("Title Received");
+			me.Alert("Title Received", 0);
 			if (p_settings.Title.text != undefined) me.g_title.text = p_settings.Title.text;
 			if (p_settings.Title.font != undefined) me.g_title.font = p_settings.Title.font;
 			if (p_settings.Title.background != undefined) me.g_title.background = p_settings.Title.background;
+			if (p_settings.Title.borderColor != undefined) me.g_title.borderColor = p_settings.Title.borderColor;
 		}
 		if (p_settings.ChartArea != undefined) {
-			console.log("ChartArea Received");
+			me.Alert("ChartArea Received", 0);
 			if (p_settings.ChartArea.canvasBackground != undefined) me.g_chartArea.canvasBackground = p_settings.ChartArea.canvasBackground;
+			if (p_settings.ChartArea.canvasAltBackground != undefined) me.g_chartArea.canvasAltBackground = p_settings.ChartArea.canvasAltBackground;
 			if (p_settings.ChartArea.background != undefined) me.g_chartArea.background = p_settings.ChartArea.background;
 			if (p_settings.ChartArea.color != undefined) me.g_chartArea.color = p_settings.ChartArea.color;
 			if (p_settings.ChartArea.pointBorder != undefined) me.g_chartArea.pointBorder = p_settings.ChartArea.pointBorder;
 			if (p_settings.ChartArea.altBackground != undefined) me.g_chartArea.altBackground = p_settings.ChartArea.altBackground;
 			if (p_settings.ChartArea.yAxisDividers != undefined) me.g_chartArea.yAxisDividers = p_settings.ChartArea.yAxisDividers;
 			if (p_settings.ChartArea.truncation != undefined) me.g_chartArea.truncation = p_settings.ChartArea.truncation;
+			if (p_settings.ChartArea.borderColor != undefined) me.g_chartArea.borderColor = p_settings.ChartArea.borderColor;
 		}
 		if (p_settings.Legend != undefined && p_settings.Legend.names != undefined) {
-			console.log("Legend Received");
+			me.Alert("Legend Received", 0);
 			me.g_legend =
 				{
 					text: p_settings.Legend.text != undefined ? p_settings.Legend.text : null,
-					font: p_settings.Legend.font != undefined ? p_settings.Legend.font : g_baseFont,
+					font: p_settings.Legend.font != undefined ? p_settings.Legend.font : me.g_baseFont,
 					background: p_settings.Legend.background != undefined ? p_settings.Legend.background : "#FFFFFF",
-					altBackground: p_settings.Legend.altBackground != undefined ? p_settings.Legend.altBackground : null,
+					altBackground: p_settings.Legend.altBackground != undefined ? p_settings.Legend.altBackground : "#666666",
+					borderColor: p_settings.Legend.borderColor != undefined ? p_settings.Legend.borderColor : "#000000",
+					highlightColor: p_settings.Legend.highlightColor != undefined ? p_settings.Legend.highlightColor : "#888888",
 					names: p_settings.Legend.names,
 					fontSize: null,
 					baseFontSize: null,
@@ -367,7 +464,7 @@ function BaseChartApi(p_element, p_settings, p_data) {
 				}
 		}
 		if (p_settings.YAxis != undefined) {
-			console.log("YAxis Received");
+			me.Alert("YAxis Received", 0);
 			if (p_settings.YAxis.text != undefined) me.g_yAxis.text = p_settings.YAxis.text;
 			if (p_settings.YAxis.font != undefined) me.g_yAxis.font = p_settings.YAxis.font;
 			if (p_settings.YAxis.min != undefined) me.g_yAxis.min = p_settings.YAxis.min;
@@ -377,16 +474,19 @@ function BaseChartApi(p_element, p_settings, p_data) {
 			if (p_settings.YAxis.baseFontSize != undefined) me.g_yAxis.baseFontSize = p_settings.YAxis.baseFontSize;
 			if (p_settings.YAxis.titleBackground != undefined) me.g_yAxis.titleBackground = p_settings.YAxis.titleBackground;
 			if (p_settings.YAxis.spokeColor != undefined) me.g_yAxis.spokeColor = p_settings.YAxis.spokeColor;
+			if (p_settings.YAxis.borderColor != undefined) me.g_yAxis.borderColor = p_settings.YAxis.borderColor;
 		}
 		if (p_settings.XAxis != undefined) {
-			console.log("XAxis Received");
+			me.Alert("XAxis Received", 0);
 			if (p_settings.XAxis.text != undefined) me.g_xAxis.text = p_settings.XAxis.text;
 			if (p_settings.XAxis.font != undefined) me.g_xAxis.font = p_settings.XAxis.font;
+			if (p_settings.XAxis.dateFormat != undefined) me.g_xAxis.dateFormat = p_settings.XAxis.dateFormat;
 			if (p_settings.XAxis.background != undefined) me.g_xAxis.background = p_settings.XAxis.background;
 			if (p_settings.XAxis.fontSize != undefined) me.g_xAxis.fontSize = p_settings.XAxis.fontSize;
 			if (p_settings.XAxis.baseFontSize != undefined) me.g_xAxis.baseFontSize = p_settings.XAxis.baseFontSize;
 			if (p_settings.XAxis.titleBackground != undefined) me.g_xAxis.titleBackground = p_settings.XAxis.titleBackground;
 			if (p_settings.XAxis.spokeColor != undefined) me.g_xAxis.spokeColor = p_settings.XAxis.spokeColor;
+			if (p_settings.XAxis.borderColor != undefined) me.g_xAxis.borderColor = p_settings.XAxis.borderColor;
 		}
 	}
 
@@ -395,14 +495,156 @@ function BaseChartApi(p_element, p_settings, p_data) {
 		// General Setup
 		// Currently used for the Background & Title.
 		// #### Background ####
-		me.Rect(me.g_canvas, 0, 0, 100, 100, me.g_chartArea.canvasBackground, "#000");
+		me.Rect(me.g_canvas, 0, 0, 100, 100,
+			me.g_chartArea.canvasBackground, me.g_chartArea.borderColor);
 		// #### Title ####
-		me.Rect(me.g_canvas, 0, 0, 100, 20, me.g_title.background, "#000");
+		me.Rect(me.g_canvas, 0, 0, 100, 20,
+			me.g_title.background, me.g_title.borderColor);
 		// Title me.Text
 		var textArea = me.TextArea(null, me.g_title.font, me.g_title.fontSize, false);
 		me.g_title.reference = me.Text(textArea, 50, 10, me.g_title.text, 8);
 	}
 
+	// See if the X Axis is dated.
+	function CheckData() {
+		// Detect if we should construct a date
+		if (typeof (me.g_data[0][0]) == "object" && typeof (me.g_data[0][0][0]) == "number") {
+			try {
+				for (var i = 0; i < me.g_data[0].length; i++) {
+					// Create the date object
+					var d = new Date(me.g_data[0][i][0], me.g_data[0][i][1], me.g_data[0][i][2]);
+					// Replace the array with the date object
+					me.g_data[0][i] = d;
+				}
+			}
+			catch (ex) {
+				// Ignore
+			}
+		}
+	}
+
+	function DrawLegend() {
+		// #### Legend ####
+		if (me.g_legend == undefined) return false;
+		// Legend event handlers
+
+		// Mouse enter
+		var hoveroverFunction = function (e) {
+			// Get parameters
+			var clickValue = e.target.getAttribute('legendValue');
+
+			// if -1, we mean 0.
+			clickValue = clickValue == -1 ? 0 : clickValue;
+			background[clickValue].setAttribute('fill-opacity', '1');
+		}
+
+		// Mouse leaves
+		var hoveroutFunction = function (e) {
+			// Get parameters
+			var clickValue = e.target.getAttribute('legendValue');
+			// Ignore the chosen one
+			if (me.drawSeries == clickValue) return;
+			// if -1, we mean 0.
+			value = clickValue == -1 ? 0 : clickValue;
+			background[value].setAttribute('fill-opacity', '0');
+		}
+		// Legend Reference
+		me.g_legend.reference = me.Group();
+		// Legend Area
+		me.Rect(me.g_legend.reference,
+			me.g_legend.minX,
+			me.g_legend.minY,
+			me.g_legend.maxX,
+			me.g_legend.maxY * (me.g_data.length / 8),
+			me.g_legend.background,
+			me.g_legend.borderColor);
+		// Legend Alt Background Hovering Element
+		background.push(
+			me.Rect(me.g_legend.reference,
+				me.g_legend.minX,
+				me.g_legend.minY,
+				me.g_legend.maxX,
+				me.g_legend.maxY / 8,
+				me.g_legend.altBackground,
+				me.g_legend.borderColor)
+			);
+		// Starts visible:
+		//background[0].setAttribute('fill-opacity', 0);
+		// Legend Text
+		var textArea = me.TextArea(me.g_legend.reference, me.g_legend.font, me.g_legend.fontSize, false);
+		me.Text(textArea,
+			me.g_legend.minX + (me.g_legend.maxX / 2),
+			me.g_legend.minY + (me.g_legend.maxY / 16),
+			me.g_legend.text);
+		// Legend Alt Background Mouse Event Handlers
+		var Listener = me.Rect(me.g_legend.reference,
+			me.g_legend.minX,
+			me.g_legend.minY,
+			me.g_legend.maxX,
+			me.g_legend.maxY / 8,
+			null,
+			null);
+
+		Listener.setAttribute('legendValue', -1);
+		me.Event(Listener, "click", me.LegendClick);
+		me.Event(Listener, "mouseover", hoveroverFunction);
+		me.Event(Listener, "mouseout", hoveroutFunction);
+
+		// Legend Categories
+		var i = 0;
+
+		while (i < 7 && me.g_legend.names[i] != undefined && me.g_legend.names[i] != null
+			&& me.g_data[i + 1] != undefined && me.g_data[i + 1] != null) {
+
+			background.push(me.Rect(
+				me.g_legend.reference,
+				me.g_legend.minX,
+				me.g_legend.minY + ((i + 1) * (me.g_legend.maxY / 8)),
+				me.g_legend.maxX,
+				me.g_legend.maxY / 8,
+				me.g_legend.highlightColor,
+				me.g_legend.borderColor));
+
+			background[i + 1].setAttribute('fill-opacity', 0);
+
+			// Must be in same textarea to prevent layering issues
+			var textArea = me.TextArea(me.g_legend.reference, me.g_legend.font, me.g_legend.baseFontSize, false);
+
+			me.Text(textArea,
+				me.g_legend.minX + (me.g_legend.maxX / 2),
+				me.g_legend.minY + ((i + 1.6) * (me.g_legend.maxY / 8)),
+				me.g_legend.names[i]);
+
+			var pointBorder = me.g_chartArea.pointBorder == null || me.g_chartArea.pointBorder[i] == null ? me.g_chartArea.color[i] : me.g_chartArea.pointBorder[i];
+
+			me.Circle(me.g_legend.reference,
+				me.g_legend.minX + (me.g_legend.maxX / 2),
+				me.g_legend.minY + ((i + 1.2) * (me.g_legend.maxY / 8)),
+				0.75,
+				me.g_chartArea.color[i],
+				pointBorder);
+
+			var Listener = me.Rect(
+				me.g_legend.reference,
+				me.g_legend.minX,
+				me.g_legend.minY + ((i + 1) * (me.g_legend.maxY / 8)),
+				me.g_legend.maxX,
+				me.g_legend.maxY / 8,
+				null,
+				null);
+
+			Listener.setAttribute('legendValue', (i + 1));
+			me.Event(Listener,
+				"click",
+				me.LegendClick);
+			me.Event(Listener, "mouseover", hoveroverFunction);
+			me.Event(Listener, "mouseout", hoveroutFunction);
+
+			i++;
+		}
+
+		return true
+	};
 
 	// #### User Interfaces ####
 
@@ -420,37 +662,47 @@ function BaseChartApi(p_element, p_settings, p_data) {
 			throw Error("Data not Received");
 		}
 		this.g_data = p_data;
-	}
+	};
 
 	// Create the chart
 	this.Render = function () {
-		console.log("#### Rendering Chart ####");
+		if (this.DEBUG) {
+			console.group();
+			console.time("Chart API");
+		}
+		me.Alert("#### Rendering Chart ####", 1);
 		try {
 			if (this.g_canvas == null || this.g_canvas == undefined) {
-				console.log("Unable to create chart - no parent element");
+				me.Alert("Unable to create chart - no parent element", 3);
 			}
 
 			// Order in which the chart is rendered:
 			this.LoadChartData();
+			CheckData();
 			LoadSettings();
 
 			SizeFonts();
 
-			console.log("#### Drawing Chart ####");
+			me.Alert("#### Drawing Chart ####", 1);
 
 			DrawBaseAreas();
 			this.BaseDrawChart();
+			if (DrawLegend()) me.Alert("Legend Rendered", 0);
 
-			console.log("#### Render Complete ####");
-
+			me.Alert("#### Render Complete ####", 1);
+			if (this.DEBUG) {
+				console.timeEnd("Chart API");
+				console.groupEnd();
+			}
 			return true;
 		}
 		catch (ex) {
-			console.error("Stopped Rendering due to exception.")
-			if (true) {
-				console.error(ex.message);
-				console.error("Line: " + ex.lineNumber);
-				console.error(ex.stack);
+			me.Alert("Stopped Rendering due to exception: " + ex.message, 3)
+			me.Alert("Line: " + ex.lineNumber, 0);
+			me.Alert(ex.stack, 0);
+			if (this.DEBUG) {
+				console.timeEnd("Chart API");
+				console.groupEnd();
 			}
 			if (this.g_canvas != null && this.g_canvas != undefined) {
 				this.Remove(true);
@@ -458,11 +710,11 @@ function BaseChartApi(p_element, p_settings, p_data) {
 			}
 		}
 		return true;
-	}
+	};
 
 	// Delete the chart
 	this.Remove = function (p_keepParent) {
-		console.log("Removing Chart");
+		me.Alert("Removing Chart", 2);
 
 		if (p_keepParent) {
 			while (this.g_canvas.hasChildNodes()) {
@@ -472,6 +724,139 @@ function BaseChartApi(p_element, p_settings, p_data) {
 		else {
 			this.g_canvas.remove();
 		}
+	};
+
+	// Hovertext handler
+	this.HoverText = function (e) {
+		// Get parameters
+		var clickValue = e.target.getAttribute('clickValue');
+		var X = e.target.getAttribute('cx');
+		var Y = e.target.getAttribute('cy');
+		// Remove '%'
+		if (X != null) {
+			X = parseInt(X.replace('%', ''), 10);
+		}
+		if (Y != null) {
+			Y = parseInt(Y.replace('%', ''), 10);
+		}
+		if (X == null) {
+			var minX = e.target.getAttribute('x');
+
+			if (false) {
+
+			} else {
+				var maxX = e.target.getAttribute('width');
+				var minY = e.target.getAttribute('y');
+				var maxY = e.target.getAttribute('height');
+
+				// Remove '%'
+				if (minX != null) {
+					minX = parseInt(minX.replace('%', ''), 10);
+				}
+				if (maxX != null) {
+					maxX = parseInt(maxX.replace('%', ''), 10);
+				}
+				if (minY != null) {
+					minY = parseInt(minY.replace('%', ''), 10);
+				}
+				if (maxY != null) {
+					maxY = parseInt(maxY.replace('%', ''), 10);
+				}
+				X = ((maxX) / 2) + minX;
+				Y = minY;
+			}
+		}
+
+		Y -= 4; // Ensure no mouse conflict
+
+		// If the hovertext already exists, remove the outdated one
+		if (hovertext != null) {
+			hovertext.remove();
+			hovertext = null;
+		}
+
+		// Create our hovertext
+		hovertext = me.Group();
+
+		// Create bounding text area
+		var textarea = me.TextArea(hovertext, null, 12, false);
+		me.Text(textarea, X, Y, clickValue, 5);
+
+		// Get the dimentions of the canvas & 
+		var CanvasBoundingBox = me.g_canvas.getBoundingClientRect();
+		var BoundingBox = textarea.getBoundingClientRect();
+
+		// Create background element. Cannot use the base API as we are working with px.
+		var rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+		rect.setAttribute('x', (BoundingBox.left - CanvasBoundingBox.left) + 'px');
+		rect.setAttribute('y', (BoundingBox.top - CanvasBoundingBox.top) + 'px');
+		rect.setAttribute('width', BoundingBox.width + 'px');
+		rect.setAttribute('height', BoundingBox.height + 'px');
+		rect.setAttribute('fill', '#FFFFFF');
+		rect.setAttribute('stroke-width', '1px');
+		rect.setAttribute('stroke', '#000000');
+		hovertext.appendChild(rect);
+
+		// Delete the example text area, as it will not be visible.
+		textarea.remove();
+
+		// Create the actual text area
+		var textarea = me.TextArea(hovertext, null, 12, false);
+		me.Text(textarea, X, Y, clickValue, 5);
+	};
+
+	// Hovertext finisher
+	this.EndHoverText = function (e) {
+		if (hovertext != null) {
+			hovertext.remove();
+			hovertext = null;
+		}
+	};
+
+	this.UpdateLegend = function (p_series) {
+		me.drawSeries = p_series;
+
+		me.RefreshChart();
+		me.RefreshCorrelation(me.drawSeries);
+
+		for (var i = 0; i < background.length; i++) {
+			value = i == 0 ? -1 : i;
+			if (value == me.drawSeries) {
+				background[i].setAttribute('fill-opacity', '1');
+				background[i].setAttribute('fill', me.g_legend.altBackground);
+			}
+			else {
+				background[i].setAttribute('fill-opacity', '0');
+				background[i].setAttribute('fill', me.g_legend.highlightColor);
+			}
+		}
+	}
+
+	// Legend interactablility
+	this.LegendClick = function (e) {
+		var clickValue = e.target.getAttribute('legendValue');
+
+		me.drawSeries = clickValue;
+
+		me.RefreshChart();
+		me.RefreshCorrelation(me.drawSeries);
+
+		for (var i = 0; i < background.length; i++) {
+			value = i == 0 ? -1 : i;
+			if (value == me.drawSeries) {
+				background[i].setAttribute('fill-opacity', '1');
+				background[i].setAttribute('fill', me.g_legend.altBackground);
+			}
+			else {
+				background[i].setAttribute('fill-opacity', '0');
+				background[i].setAttribute('fill', me.g_legend.highlightColor);
+			}
+		}
+	};
+
+	this.RefreshCorrelation = function () {
+		//Placeholder for chart types that do not support correlation
+		return false;
 	}
 };
 

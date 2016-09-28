@@ -7,73 +7,96 @@
 	<script type="text/javascript" src="../Code/ComparisonChartApi.js"></script>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 </head>
-<body style="margin:0px;">
-	<svg id="body" width="600" height="500" style="border:1px solid black;"></svg>
+<body>
+	<svg id="body" width="1000" height="400" style="border:1px solid black;"></svg>
 	<script>
-		var settings =
+		var settings = {
+			/*
+			Title:
 			{
-				/*
-				Title:
-				{
-					text: "Cumulative Months in Year"
-				},
-				YAxis:
-				{
-					text: "Cumulative Months"
-				},
-				XAxis:
-				{
-					text: "Month of Year"
-				}
-				//*/
-				BaseFont: "Verdana",
-				Title:
-				{
-					text: "Cumulative Months in Year",
-					//font: "TimesNewRoman",
-					background: "#FFFFFF"
-				},
-				ChartArea:
-				{
-					canvasBackground: "#9ECAE1",
-					background: "#F0F0F0",
-					altBackground: "#FFFFFF",
-					truncation: 3,
-					yAxisDividers: 7,
-					color: ["#562a12", "#561224", "#56124f", "#371256", "#122656", "#125650", "#125627", "#165612", "#3e5612", "#565112", "#563712", "#561512"]
-				},
-				YAxis:
-					{
-						spokeColor: "grey",
-						text: "Cumulative Months",
-						// fontSize: 10,
-						// baseFontSize: 5,
-						max: 35,
-						min: 1,
-						//font: "Lucida Sans Unicode",
-						background: "#FFFFFF",
-						titleBackground: "#ff9900"
-					},
-				XAxis:
-					{
-						spokeColor: "grey",
-						text: "Month of Year",
-						// fontSize: 10,
-						// baseFontSize: 5,
-						//font: "TimesNewRoman",
-						background: "#FFFFFF",
-						titleBackground: "#FF9900"
-					}
-
-				,
-				Legend:
-					{
-						names: ["Cumulative\nMonths", "Months\nRemaining", "Value of\nMonth", "Days in\nMonth"],
-						text: "Legend",
-						background: "White",
-						altBackground: "#ff9900"
-					}//*/
+				text: "Cumulative Months in Year"
+			},
+			YAxis:
+			{
+				text: "Cumulative Months"
+			},
+			XAxis:
+			{
+				text: "Month of Year"
 			}
+			//*/
+			BaseFont: "Verdana",
+			Title:
+			{
+				text: "Cumulative Months\nin Year",
+				//font: "TimesNewRoman",
+				background: "#FFFFFF",
+				borderColor: "transparent"
+			},
+			ChartArea:
+			{
+				canvasBackground: "Transparent",
+				canvasAltBackground: "#9ECAE1",
+				background: "#F0F0F0",
+				altBackground: "#FFFFFF",
+				truncation: 3,
+				yAxisDividers: 8,
+				color: ["blue", "Green", "Black", "purple", "#f90"],
+				borderColor: "black"
+			},
+			YAxis:
+				{
+					spokeColor: "grey",
+					text: "Cumulative Months",
+					// fontSize: 10,
+					// baseFontSize: 5,
+					max: 35,
+					min: 1,
+					//font: "Lucida Sans Unicode",
+					background: "lightGrey",
+					titleBackground: "#ff9900",
+					borderColor: "transparent"
+				},
+			XAxis:
+				{
+					spokeColor: "grey",
+					text: "Month of Year",
+					// fontSize: 10,
+					// baseFontSize: 5,
+					//font: "TimesNewRoman",
+					background: "lightGrey",
+					titleBackground: "#FF9900",
+					dateFormat: "MM",
+					borderColor: "transparent"
+				}
+
+		,
+			Legend:
+				{
+					names: ["Cumulative\nMonths", "Months\nRemaining", "Value of\nMonth", "Days in\nMonth", "I like\nOranges"],
+					text: "Legend",
+					background: "lightGrey",
+					altBackground: "#ff9900",
+					borderColor: "Transparent",
+					highlightColor: "#9ECAE1"
+				}//*/
+			,
+			Formula:
+				{
+					font: null,
+					borderColor: "Transparent",
+					background: "#9ECAE1",
+					fontSize: null
+				},
+			Correlation:
+				{
+					font: null,
+					borderColor: "Transparent",
+					background: "#9ECAE1",
+					fontSize: null
+				}
+		}
+
 		var data =
 			[
 				[
@@ -81,7 +104,7 @@
 				],
 				[
 						1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12
-				]/*,
+				],
 				[
 						11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0
 				],
@@ -93,7 +116,7 @@
 				],
 				[
 						15, 34, 21, 7, 4, 22, 13, 11, 25, 21, 14, 17
-				]*/
+				]//*/
 			]
 		var body = document.getElementById("body"); //*/document.body;
 		var chart = new ProportionChartApi(body, settings, data);

@@ -8,6 +8,8 @@ function SeriesChartApi(p_element, p_settings, p_data) {
 	this.base(p_element, p_settings, p_data);
 	var me = this;
 
+	var correlation = null;
+
 
 	// Functions
 
@@ -23,10 +25,16 @@ function SeriesChartApi(p_element, p_settings, p_data) {
 			me.g_yAxis.maxX,
 			me.g_yAxis.maxY,
 			me.g_yAxis.background,
-			"#000");
+			me.g_yAxis.borderColor);
 		// YAxis Alt Background
-		me.Rect(me.g_yAxis.reference, me.g_yAxis.minX, me.g_yAxis.minY, me.g_yAxis.maxX / 2, me.g_yAxis.maxY, me.g_yAxis.titleBackground, "#000");
-		// YAxis me.Text
+		me.Rect(me.g_yAxis.reference,
+			me.g_yAxis.minX,
+			me.g_yAxis.minY,
+			me.g_yAxis.maxX / 2,
+			me.g_yAxis.maxY,
+			me.g_yAxis.titleBackground,
+			me.g_yAxis.borderColor);
+		// YAxis Text
 		var textArea = me.TextArea(me.g_yAxis.reference,
 			me.g_yAxis.font,
 			me.g_yAxis.fontSize,
@@ -47,28 +55,40 @@ function SeriesChartApi(p_element, p_settings, p_data) {
 		var increment = (me.g_yAxis.max - me.g_yAxis.min)
 			/ (me.g_chartArea.yAxisDividers - 1);
 
-		for (var i = 0; i < (me.g_chartArea.yAxisDividers) ; i++) {
+		for (var i = 0; i < me.g_chartArea.yAxisDividers; i++) {
 			var nextY = 1 - (i * increment) / (me.g_yAxis.max - me.g_yAxis.min);
 			var y = (nextY * me.g_chartArea.maxY) + me.g_chartArea.minY;
 
 			// Ensure we only get 5 characters. /,/g replaces all instances of ,
-			var text = ((i * increment) + me.g_yAxis.min).toString().split('', 5).toString().replace(/,/g, '');
+			var text = me.Truncate((i * increment) + me.g_yAxis.min);
 
 			me.Text(textArea,
 				me.g_yAxis.minX + (me.g_yAxis.maxX * (3 / 4)),
 				y + 1, // TODO: Replace 1 with somthing more sensible
 				text);
 		}
-	}
+	};
 
 	function DrawXAxis() {
 		// XAxis Reference
 		me.g_xAxis.reference = me.Group();
 		// XAxis Area
-		me.Rect(me.g_xAxis.reference, me.g_xAxis.minX, me.g_xAxis.minY, me.g_xAxis.maxX, me.g_xAxis.maxY, me.g_xAxis.background, "#000");
+		me.Rect(me.g_xAxis.reference,
+			me.g_xAxis.minX,
+			me.g_xAxis.minY,
+			me.g_xAxis.maxX,
+			me.g_xAxis.maxY,
+			me.g_xAxis.background,
+			me.g_xAxis.borderColor);
 		// XAxis Alt Background
-		me.Rect(me.g_xAxis.reference, me.g_xAxis.minX, me.g_xAxis.minY + (me.g_xAxis.maxY / 2), me.g_xAxis.maxX, me.g_xAxis.maxY / 2, me.g_xAxis.titleBackground, "#000");
-		// XAxis me.Text
+		me.Rect(me.g_xAxis.reference,
+			me.g_xAxis.minX,
+			me.g_xAxis.minY + (me.g_xAxis.maxY / 2),
+			me.g_xAxis.maxX,
+			me.g_xAxis.maxY / 2,
+			me.g_xAxis.titleBackground,
+			me.g_xAxis.borderColor);
+		// XAxis Text
 		var textArea = me.TextArea(me.g_xAxis.reference, me.g_xAxis.font, me.g_xAxis.fontSize, false);
 		me.Text(textArea,
 			me.g_xAxis.minX + (me.g_xAxis.maxX / 2),
@@ -76,23 +96,55 @@ function SeriesChartApi(p_element, p_settings, p_data) {
 			me.g_xAxis.text);
 
 		// XAxis Spokes
-		var increment = me.g_chartArea.maxX / (me.g_data[1].length - 1);
-		for (var i = 0; i < me.g_data[1].length; i++) {
-			var x = me.g_chartArea.minX + (i * increment);
 
-			var textArea = me.TextArea(me.g_xAxis.reference,
-				me.g_xAxis.font,
-				me.g_xAxis.baseFontSize,
-				true,
-				x + 1, // TODO: Replace 1 with somthing more sensible
-				me.g_xAxis.minY + (me.g_xAxis.maxY / 4));
+		if (typeof (me.g_data[0][0]) == "number" ||
+			(typeof (me.g_data[0][0]) == "object" && me.g_data[0][0].toString() != null)) {
 
-			me.Text(textArea,
-				x + 1, // TODO: Replace 1 with half the font size
-				me.g_xAxis.minY + (me.g_xAxis.maxY / 4),
-				me.g_data[0][i]);
+			// Variable X Axis
+			var isDate = (typeof (me.g_data[0][0]) == "object" && me.g_data[0][0].toString() != null);
+			for (var i = 0; i < me.g_data[1].length; i++) {
+				var date = me.g_data[0][i];
+				var value = isDate ? date : date.valueOf();
+				var text = isDate ? me.FormatDate(date, me.g_xAxis.dateFormat) : date.toString();
+
+				var nextX = (value - me.g_xAxis.min) / (me.g_xAxis.max - me.g_xAxis.min);
+				var x = (nextX * me.g_chartArea.maxX) + me.g_chartArea.minX;
+
+				var textArea = me.TextArea(me.g_xAxis.reference,
+					me.g_xAxis.font,
+					me.g_xAxis.baseFontSize,
+					true,
+					x + 1, // TODO: Replace 1 with somthing more sensible
+					me.g_xAxis.minY + (me.g_xAxis.maxY / 4));
+
+				me.Text(textArea,
+					x + 1, // TODO: Replace 1 with half the font size
+					me.g_xAxis.minY + (me.g_xAxis.maxY / 4),
+					text);
+			}
 		}
-	}
+		else {
+
+			// String X Axis
+			var increment = me.g_chartArea.maxX / (me.g_data[1].length - 1);
+			// Draw for e
+			for (var i = 0; i < me.g_data[1].length; i++) {
+				var x = me.g_chartArea.minX + (i * increment);
+
+				var textArea = me.TextArea(me.g_xAxis.reference,
+					me.g_xAxis.font,
+					me.g_xAxis.baseFontSize,
+					true,
+					x + 1, // TODO: Replace 1 with somthing more sensible
+					me.g_xAxis.minY + (me.g_xAxis.maxY / 4));
+
+				me.Text(textArea,
+					x + 1, // TODO: Replace 1 with half the font size
+					me.g_xAxis.minY + (me.g_xAxis.maxY / 4),
+					me.g_data[0][i]);
+			}
+		}
+	};
 
 	function DrawChartContainer() {
 		// #### Chart Area ####
@@ -100,14 +152,40 @@ function SeriesChartApi(p_element, p_settings, p_data) {
 		if (typeof me.g_chartArea.reference != Element) {
 			me.g_chartArea.reference = me.Group();
 		}
+		// Chart alt canvas background
+		me.Rect(me.g_chartArea.reference,
+			me.g_chartArea.minX - 3,
+			me.g_chartArea.minY - 3,
+			me.g_chartArea.maxX + 6,
+			me.g_chartArea.maxY + 6,
+			me.g_chartArea.canvasAltBackground);
 		// Chart Area Background
-		me.Rect(me.g_chartArea.reference, me.g_chartArea.minX, me.g_chartArea.minY, me.g_chartArea.maxX, me.g_chartArea.maxY, me.g_chartArea.background, null);
+		me.Rect(me.g_chartArea.reference,
+			me.g_chartArea.minX,
+			me.g_chartArea.minY,
+			me.g_chartArea.maxX,
+			me.g_chartArea.maxY,
+			me.g_chartArea.background,
+			null);
 		// Chart Area Dividers
 		// (Both use same code as on their respective axis.)
 		// XAxis Spokes
 		var increment = me.g_chartArea.maxX / (me.g_data[1].length - 1);
+
+		var isVariableXAxis = typeof (me.g_data[0][0]) == "number"
+			|| (typeof (me.g_data[0][0]) == "object" && me.g_data[0][0].toString() != null);
+		var isDate = (typeof (me.g_data[0][0]) == "object" && me.g_data[0][0].toString() != null);
+
 		for (var i = 0; i < me.g_data[1].length; i++) {
-			var x = me.g_chartArea.minX + (i * increment);
+			var x;
+			if (isVariableXAxis) {
+				valueX = isDate ? me.g_data[0][i] : me.g_data[0][i].valueOf();
+
+				var nextX = (valueX - me.g_xAxis.min) / (me.g_xAxis.max - me.g_xAxis.min);
+				x = (nextX * me.g_chartArea.maxX) + me.g_chartArea.minX;
+			} else {
+				x = me.g_chartArea.minX + (i * increment);
+			}
 
 			var color = me.g_xAxis.spokeColor;
 			if (i == 0 || i == me.g_data[1].length - 1) {
@@ -142,70 +220,14 @@ function SeriesChartApi(p_element, p_settings, p_data) {
 		}
 
 		// Chart Area Outline
-		me.Rect(me.g_chartArea.reference, me.g_chartArea.minX, me.g_chartArea.minY, me.g_chartArea.maxX, me.g_chartArea.maxY, null, "#000");
-	}
-
-	function DrawLegend() {
-		// #### Legend ####
-		if (me.g_legend == undefined) return false;
-		// Legend Reference
-		me.g_legend.reference = me.Group();
-		// Legend Area
-		me.Rect(me.g_legend.reference,
-			me.g_legend.minX,
-			me.g_legend.minY,
-			me.g_legend.maxX,
-			me.g_legend.maxY,
-			me.g_legend.background,
+		me.Rect(me.g_chartArea.reference,
+			me.g_chartArea.minX,
+			me.g_chartArea.minY,
+			me.g_chartArea.maxX,
+			me.g_chartArea.maxY,
+			null,
 			"#000");
-		// Legend Alt Background
-		me.Rect(me.g_legend.reference,
-			me.g_legend.minX,
-			me.g_legend.minY,
-			me.g_legend.maxX,
-			me.g_legend.maxY / 8,
-			me.g_legend.altBackground,
-			"#000");
-		// Legend me.Text
-		var textArea = me.TextArea(me.g_legend.reference, me.g_legend.font, me.g_legend.fontSize, false);
-		me.Text(textArea,
-			me.g_legend.minX + (me.g_legend.maxX / 2),
-			me.g_legend.minY + (me.g_legend.maxY / 16),
-			me.g_legend.text);
-		// Legend Categories
-		var textArea = me.TextArea(me.g_legend.reference, me.g_legend.font, me.g_legend.baseFontSize, false);
-		var i = 0;
-
-		while (i < 7 && me.g_legend.names[i] != undefined && me.g_legend.names[i] != null) {
-			var text = me.g_legend.names[i].split('\n');
-			for (var i2 = 0; i2 < text.length; i2++) {
-				me.Text(textArea,
-				me.g_legend.minX + (me.g_legend.maxX / 2),
-				me.g_legend.minY + ((i + 1.6) * (me.g_legend.maxY / 8)) + (i2 * 3),
-				text[i2]);
-			}
-
-			var pointBorder = me.g_chartArea.pointBorder == null || me.g_chartArea.pointBorder[i] == null ? me.g_chartArea.color[i] : me.g_chartArea.pointBorder[i];
-
-			me.Circle(me.g_legend.reference,
-				me.g_legend.minX + (me.g_legend.maxX / 2),
-				me.g_legend.minY + ((i + 1.2) * (me.g_legend.maxY / 8)),
-				0.75,
-				me.g_chartArea.color[i],
-				pointBorder);
-
-			me.Rect(me.g_legend.reference,
-				me.g_legend.minX,
-				me.g_legend.minY + ((i + 1) * (me.g_legend.maxY / 8)),
-				me.g_legend.maxX,
-				me.g_legend.maxY / 8,
-				null,
-				'#000000');
-
-			i++;
-		}
-		return true
-	}
+	};
 
 	function DrawCorrelation(p_correlation, p_colorNB) {
 		if (p_correlation == undefined || p_correlation == null) {
@@ -223,7 +245,7 @@ function SeriesChartApi(p_element, p_settings, p_data) {
 			me.g_chartArea.minX + me.g_chartArea.maxX,
 			me.g_chartArea.minY + (me.g_chartArea.maxY * (endX)),
 			me.g_chartArea.color[p_colorNB]);
-	}
+	};
 
 	// Set's out proportions of the chart & draws areas around the chart.
 	function SizeChart() {
@@ -258,81 +280,24 @@ function SeriesChartApi(p_element, p_settings, p_data) {
 			me.g_legend.maxX = 20;
 			me.g_legend.maxY = 80;
 		}
-	}
+	};
 
 	// Set's out any pre-rendering processing of the data.
 	function SizeData() {
 		// #### Y Axis ####
 		// Y Axis Min & Max
 
-		// Value
+		// Get the initial Min & Max
 		var max = Math.max.apply(null, me.g_data[1]);
 		var min = Math.min.apply(null, me.g_data[1]);
-		// Value2
-		if (me.g_data[2] != undefined && me.g_data[2] != null) {
-			var max2 = Math.max.apply(null, me.g_data[2]);
-			var min2 = Math.min.apply(null, me.g_data[2]);
 
-			if (max < max2) {
-				max = max2;
-			}
-			if (min > min2) {
-				min = min2;
-			}
-		}
-		// Value3
-		if (me.g_data[3] != undefined && me.g_data[3] != null) {
-			var max2 = Math.max.apply(null, me.g_data[3]);
-			var min2 = Math.min.apply(null, me.g_data[3]);
+		// Find the other series max & min
+		for (var i = me.g_data.length; i > 1; i--) {
 
-			if (max < max2) {
-				max = max2;
-			}
-			if (min > min2) {
-				min = min2;
-			}
-		}
-		// Value4
-		if (me.g_data.value4 != undefined && me.g_data.value4 != null) {
-			var max2 = Math.max.apply(null, me.g_data.value4);
-			var min2 = Math.min.apply(null, me.g_data.value4);
+			var max2 = Math.max.apply(null, me.g_data[i]);
+			var min2 = Math.min.apply(null, me.g_data[i]);
 
-			if (max < max2) {
-				max = max2;
-			}
-			if (min > min2) {
-				min = min2;
-			}
-		}
-		// Value5
-		if (me.g_data.Value5 != undefined && me.g_data.Value5 != null) {
-			var max2 = Math.max.apply(null, me.g_data.Value5);
-			var min2 = Math.min.apply(null, me.g_data.Value5);
-
-			if (max < max2) {
-				max = max2;
-			}
-			if (min > min2) {
-				min = min2;
-			}
-		}
-		// Value6
-		if (me.g_data.Value6 != undefined && me.g_data.Value6 != null) {
-			var max2 = Math.max.apply(null, me.g_data.Value6);
-			var min2 = Math.min.apply(null, me.g_data.Value6);
-
-			if (max < max2) {
-				max = max2;
-			}
-			if (min > min2) {
-				min = min2;
-			}
-		}
-		// Value7
-		if (me.g_data.Value7 != undefined && me.g_data.Value7 != null) {
-			var max2 = Math.max.apply(null, me.g_data.Value7);
-			var min2 = Math.min.apply(null, me.g_data.Value7);
-
+			// If the max or min are more significant, use them
 			if (max < max2) {
 				max = max2;
 			}
@@ -341,13 +306,45 @@ function SeriesChartApi(p_element, p_settings, p_data) {
 			}
 		}
 
+		// If the default min & max aren't more relevant, add our derived one in.
 		if (me.g_yAxis.max == null || me.g_yAxis.max < max) {
 			me.g_yAxis.max = max;
 		}
 		if (me.g_yAxis.min == null || me.g_yAxis.min > min) {
 			me.g_yAxis.min = min;
 		}
-	}
+
+		// X Axis
+
+		if (typeof (me.g_data[0][0]) == "number") {
+			// Get the initial Min & Max
+			var max = Math.max.apply(null, me.g_data[0]);
+			var min = Math.min.apply(null, me.g_data[0]);
+
+			me.g_xAxis.max = max;
+			me.g_xAxis.min = min;
+		}
+		else if (typeof (me.g_data[0][0]) == "object" && me.g_data[0][0].toString() != null) {
+
+			// We are working with dates
+			var seconds = [];
+			for (var i = 0; i < me.g_data[0].length; i++) {
+				seconds[i] = me.g_data[0][i].valueOf();
+			}
+
+			var max = Math.max.apply(null, seconds);
+			var min = Math.min.apply(null, seconds);
+
+			me.g_xAxis.max = max;
+			me.g_xAxis.min = min;
+
+		}
+		else {
+			// Standard string X Axis
+			me.g_xAxis.max = me.g_data[0].length;
+			me.g_xAxis.min = 0;
+		}
+	};
 
 
 	// Master Functions
@@ -358,41 +355,64 @@ function SeriesChartApi(p_element, p_settings, p_data) {
 		SizeChart();
 		SizeData();
 
-		DrawYAxis(); console.log("YAxis Rendered");
-		DrawXAxis(); console.log("XAxis Rendered");
-		if (DrawLegend()) console.log("Legend Rendered");
-		DrawChartContainer(); console.log("Chart Container Rendered");
+		DrawYAxis(); me.Alert("YAxis Rendered", 0);
+		DrawXAxis(); me.Alert("XAxis Rendered", 0);
+		DrawChartContainer(); me.Alert("Chart Container Rendered", 0);
 
 		// Pass on to lower level function
 		this.DrawChart();
-	}
+	};
+
+	// Delete the chart area and redraw it
+	this.RefreshChart = function () {
+		this.g_chartArea.reference.remove(); me.Alert("Chart Area Removed", 0);
+
+		DrawChartContainer(); me.Alert("Chart Container Rendered", 0);
+
+		// Pass on to lower level function
+		this.DrawChart();
+	};
 
 	// Draw out correlation on canvas.
 	this.RenderCorrelation = function (p_element, p_settings) {
 
-		var widget = new ChartApiCorrelaitonWidget(this.g_data[0], p_element, p_settings);
+		var widget = new ChartApiCorrelaitonWidget(this.g_data[0], p_element, p_settings, this);
 
-		console.log("### Render Correlation ###");
+		me.Alert("### Render Correlation ###", 1);
 		for (var i = this.g_data.length - 1; i > 0; i--) {
 			DrawCorrelation(widget.GetCorrelation(this.g_data[i]), i - 1);
 		}
 
+		correlation = widget;
+
 		return widget;
-	}
+	};
+
+	this.RefreshCorrelation = function (p_ignore) {
+		if (correlation == null) return;
+
+		for (var i = this.g_data.length - 1; i > 0; i--) {
+			if (p_ignore != -1 && i != p_ignore) continue;
+
+			DrawCorrelation(correlation.g_results[correlation.g_results.length - i], i - 1);
+		};
+
+		correlation.Update(p_ignore);
+	};
 
 	// Create correlation without drawing it.
 	this.CreateCorrelation = function (p_element, p_settings) {
 
-		var widget = new ChartApiCorrelaitonWidget(this.g_data[0], p_element, p_settings);
+		var widget = new ChartApiCorrelaitonWidget(this.g_data[0], p_element, p_settings, this);
 
-		console.log("### Calculating Correlation ###");
+		me.Alert("### Calculating Correlation ###", 1);
 
 		for (var i = this.g_data.length - 1; i > 0; i--) {
 			widget.GetCorrelation(this.g_data[i]);
 		}
 
 		return widget;
-	}
+	};
 };
 
 // Child object
@@ -409,46 +429,119 @@ function LineChartApi(p_element, p_settings, p_data) {
 			return false;
 		}
 		// Points in Graph
-		var nextY = 1 - ((p_data[0] - me.g_yAxis.min) / (me.g_yAxis.max - me.g_yAxis.min));
+		var isDate = (typeof (me.g_data[0][0]) == "object" && me.g_data[0][0].toString() != null);
+		var isVariableXAxis = typeof (me.g_data[0][0]) == "number"
+			|| (typeof (me.g_data[0][0]) == "object" && me.g_data[0][0].toString() != null);
+
+		var index = i;
+		var index2 = i + 1;
+		var sortedArray;
+		if (isVariableXAxis) {
+			sortedArray = me.g_data[0].sort(function (a, b) { return a - b });
+			index = me.g_data[0].indexOf(sortedArray[0]);
+			index2 = me.g_data[0].indexOf(sortedArray[1]);
+		}
+
+		var nextY = 1 - ((p_data[index] - me.g_yAxis.min) / (me.g_yAxis.max - me.g_yAxis.min));
+
 		var incrementX = me.g_chartArea.maxX / (p_data.length - 1);
-		var pointBorder = me.g_chartArea.pointBorder == null || me.g_chartArea.pointBorder[p_colorNB] == null ? me.g_chartArea.color[p_colorNB] : me.g_chartArea.pointBorder[p_colorNB];
+		var valueX = isDate ? me.g_data[0][index] : me.g_data[0][index].valueOf();
+
+		var pointBorder = me.g_chartArea.pointBorder == null
+			|| me.g_chartArea.pointBorder[p_colorNB] == null
+			? me.g_chartArea.color[p_colorNB] : me.g_chartArea.pointBorder[p_colorNB];
+
 
 		for (var i = 0; i < (p_data.length - 1) ; i++) {
-			var x1 = me.g_chartArea.minX + (i * incrementX);
-			var x2 = me.g_chartArea.minX + ((i + 1) * incrementX);
+			// Get X
+			var x1;
+			var x2;
 
-			if (p_data[i + 1] == undefined || p_data[i + 1] == null ||
-				p_data[i] == undefined || p_data[i] == null) {
-				if (!(p_data[i] == undefined || p_data[i] == null)) {
-					me.Circle(me.g_chartArea.reference, x1, y1, 0.75, me.g_chartArea.color[p_colorNB], pointBorder);
+			index = i;
+			index2 = i + 1;
+
+			if (!isVariableXAxis) {
+				x1 = me.g_chartArea.minX + (index * incrementX);
+				x2 = me.g_chartArea.minX + (index2 * incrementX);
+			} else {
+				index = me.g_data[0].indexOf(sortedArray[i]);
+				index2 = me.g_data[0].indexOf(sortedArray[i + 1]);
+
+				var nextX = (valueX - me.g_xAxis.min) / (me.g_xAxis.max - me.g_xAxis.min);
+				var x1 = (nextX * me.g_chartArea.maxX) + me.g_chartArea.minX;
+
+				valueX = isDate ? me.g_data[0][index2] : me.g_data[0][index2].valueOf();
+
+				var nextX = (valueX - me.g_xAxis.min) / (me.g_xAxis.max - me.g_xAxis.min);
+				var x2 = (nextX * me.g_chartArea.maxX) + me.g_chartArea.minX;
+			}
+
+			if (p_data[index2] == undefined || p_data[index2] == null ||
+				p_data[index] == undefined || p_data[index] == null) {
+				if (!(p_data[index] == undefined || p_data[index] == null)) {
+					me.Circle(me.g_chartArea.reference,
+						x1,
+						y1,
+						0.75,
+						me.g_chartArea.color[p_colorNB],
+						pointBorder);
 				}
 
-				nextY = 1 - ((p_data[i + 1] - me.g_yAxis.min) / (me.g_yAxis.max - me.g_yAxis.min));
+				nextY = 1 - ((p_data[index2] - me.g_yAxis.min) /
+					(me.g_yAxis.max - me.g_yAxis.min));
 				continue;
 			}
 
 			var y1 = (nextY * me.g_chartArea.maxY) + me.g_chartArea.minY;
-			nextY = 1 - ((p_data[i + 1] - me.g_yAxis.min) / (me.g_yAxis.max - me.g_yAxis.min));
+			nextY = 1 - ((p_data[index2] - me.g_yAxis.min) / (me.g_yAxis.max - me.g_yAxis.min));
 
 			var y2 = (nextY * me.g_chartArea.maxY) + me.g_chartArea.minY;
 			me.Line(me.g_chartArea.reference, x1, y1, x2, y2, me.g_chartArea.color[p_colorNB]);
 
+			var category = isDate ? me.FormatDate(me.g_data[0][index], me.g_xAxis.dateFormat) : me.g_data[0][index];
 
-			me.Circle(me.g_chartArea.reference, x1, y1, 0.75, me.g_chartArea.color[p_colorNB], pointBorder);
+			var Circle = me.Circle(me.g_chartArea.reference, x1, y1, 0.75, me.g_chartArea.color[p_colorNB], pointBorder);
+
+			me.Event(Circle,
+				"mouseover",
+				me.HoverText,
+				p_data[index] + ', ' + category);
+
+			me.Event(Circle,
+				"mouseout",
+				me.EndHoverText);
+
 			if (i == p_data.length - 2) {
+
+				var category = isDate ? me.FormatDate(me.g_data[0][index2], me.g_xAxis.dateFormat) : me.g_data[0][index2];
+
 				var point = me.Circle(me.g_chartArea.reference, x2, y2, 0.75, me.g_chartArea.color[p_colorNB], pointBorder);
+
+				me.Event(point,
+				"mouseover",
+				me.HoverText,
+				p_data[index2] + ', ' + category);
+
+				me.Event(point,
+					"mouseout",
+					me.EndHoverText);
 			}
 		}
 
 		return true;
-	}
+	};
 
-	// Function used to plot Line Chart's
+
+	// #### User Interfaces ####
+
+
 	this.DrawChart = function () {
 		for (var i = this.g_data.length - 1; i > 0; i--) {
+			if (me.drawSeries != -1 && i != me.drawSeries) continue;
+
 			DrawPoint(i - 1, this.g_data[i]);
 		}
-	}
+	};
 };
 
 // Child object
@@ -467,13 +560,35 @@ function ScatterChartApi(p_element, p_settings, p_data) {
 			return false
 		}
 		// Points in Graph
+		var isDate = (typeof (me.g_data[0][0]) == "object" && me.g_data[0][0].toString() != null);
+
+		var isVariableXAxis = typeof (me.g_data[0][0]) == "number"
+			|| (typeof (me.g_data[0][0]) == "object" && me.g_data[0][0].toString() != null);
+
 		var nextY = 1 - ((p_data[0] - me.g_yAxis.min) / (me.g_yAxis.max - me.g_yAxis.min));
+
 		var incrementX = me.g_chartArea.maxX / (p_data.length - 1);
+		var valueX = isDate ? me.g_data[0][0] : me.g_data[0][0].valueOf();
+
 		var pointBorder = me.g_chartArea.pointBorder == null || me.g_chartArea.pointBorder[p_colorNB] == null ? me.g_chartArea.color[p_colorNB] : me.g_chartArea.pointBorder[p_colorNB];
 
 		for (var i = 0; i < (p_data.length - 1) ; i++) {
-			var x1 = me.g_chartArea.minX + (i * incrementX);
-			var x2 = me.g_chartArea.minX + ((i + 1) * incrementX);
+			// Get X
+			var x1;
+			var x2;
+
+			if (!isVariableXAxis) {
+				x1 = me.g_chartArea.minX + (i * incrementX);
+				x2 = me.g_chartArea.minX + ((i + 1) * incrementX);
+			} else {
+				var nextX = (valueX - me.g_xAxis.min) / (me.g_xAxis.max - me.g_xAxis.min);
+				var x1 = (nextX * me.g_chartArea.maxX) + me.g_chartArea.minX;
+
+				valueX = isDate ? me.g_data[0][i + 1] : me.g_data[0][i + 1].valueOf();
+
+				var nextX = (valueX - me.g_xAxis.min) / (me.g_xAxis.max - me.g_xAxis.min);
+				var x2 = (nextX * me.g_chartArea.maxX) + me.g_chartArea.minX;
+			}
 
 			if (p_data[i + 1] == undefined || p_data[i + 1] == null ||
 				p_data[i] == undefined || p_data[i] == null) {
@@ -490,19 +605,45 @@ function ScatterChartApi(p_element, p_settings, p_data) {
 
 			var y2 = (nextY * me.g_chartArea.maxY) + me.g_chartArea.minY;
 
+			var category = isDate ? me.FormatDate(me.g_data[0][i], me.g_xAxis.dateFormat) : me.g_data[0][i];
 
-			me.Circle(me.g_chartArea.reference, x1, y1, 0.75, me.g_chartArea.color[p_colorNB], pointBorder);
+			var Circle = me.Circle(me.g_chartArea.reference, x1, y1, 0.75, me.g_chartArea.color[p_colorNB], pointBorder);
+			me.Event(Circle,
+				"mouseover",
+				me.HoverText,
+				p_data[i] + ', ' + category);
+
+			me.Event(Circle,
+				"mouseout",
+				me.EndHoverText);
+
 			if (i == p_data.length - 2) {
 				var point = me.Circle(me.g_chartArea.reference, x2, y2, 0.75, me.g_chartArea.color[p_colorNB], pointBorder);
+
+				var category = isDate ? me.FormatDate(me.g_data[0][i + 1], me.g_xAxis.dateFormat) : me.g_data[0][i + 1];
+
+				me.Event(point,
+					"mouseover",
+					me.HoverText,
+					p_data[i + 1] + ', ' + category);
+
+				me.Event(point,
+					"mouseout",
+					me.EndHoverText);
 			}
 		}
 
 		return true;
 	};
 
-	// Function used to plot Scatter chart's
+
+	// #### User Interfaces ####
+
+
 	this.DrawChart = function () {
 		for (var i = this.g_data.length - 1; i > 0; i--) {
+			if (me.drawSeries != -1 && i != me.drawSeries) continue;
+
 			DrawPoint(i - 1, this.g_data[i]);
 		}
 	};

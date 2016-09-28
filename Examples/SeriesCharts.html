@@ -1,84 +1,105 @@
 ﻿<!DOCTYPE html>
 
-<html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
 <head>
-	<title>Cumulative Months in Year</title>
+	<meta charset="utf-8" />
+	<title></title>
 	<script type="text/javascript" src="../Code/ChartApi.js"></script>
 	<script type="text/javascript" src="../Code/SeriesChartApi.js"></script>
 	<script type="text/javascript" src="../Code/ChartApiCorrelationWidget.js"></script>
-	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 </head>
-<body style="margin:0px;">
-	<!--<svg id="body" width="500" height="200" style="border:1px solid black;"></svg>-->
+<body>
 	<script>
-		var settings =
+		var settings = {
+			/*
+			Title:
 			{
-				/*
-				Title:
+				text: "Cumulative Months in Year"
+			},
+			YAxis:
+			{
+				text: "Cumulative Months"
+			},
+			XAxis:
+			{
+				text: "Month of Year"
+			}
+			//*/
+			BaseFont: "Verdana",
+			Title:
+			{
+				text: "Cumulative Months\nin Year",
+				//font: "TimesNewRoman",
+				background: "#FFFFFF",
+				borderColor: "transparent"
+			},
+			ChartArea:
+			{
+				canvasBackground: "Transparent",
+				canvasAltBackground: "#9ECAE1",
+				background: "#F0F0F0",
+				altBackground: "#FFFFFF",
+				truncation: 3,
+				yAxisDividers: 8,
+				color: ["blue", "Green", "Black", "purple", "#f90"],
+				borderColor: "transparent"
+			},
+			YAxis:
 				{
-					text: "Cumulative Months in Year"
+					spokeColor: "grey",
+					text: "Cumulative Months",
+					// fontSize: 10,
+					// baseFontSize: 5,
+					max: 35,
+					min: 1,
+					//font: "Lucida Sans Unicode",
+					background: "lightGrey",
+					titleBackground: "#ff9900",
+					borderColor: "transparent"
 				},
-				YAxis:
+			XAxis:
 				{
-					text: "Cumulative Months"
-				},
-				XAxis:
-				{
-					text: "Month of Year"
-				}
-				//*/
-				BaseFont: "Verdana",
-				Title:
-				{
-					text: "Cumulative Months\nin Year",
+					spokeColor: "grey",
+					text: "Month of Year",
+					// fontSize: 10,
+					// baseFontSize: 5,
 					//font: "TimesNewRoman",
-					background: "#FFFFFF"
-				},
-				ChartArea:
-				{
-					canvasBackground: "#9ECAE1",
-					background: "#F0F0F0",
-					altBackground: "#FFFFFF",
-					truncation: 3,
-					yAxisDividers: 8,
-					color: ["blue", "Green", "Black", "purple", "#f90"]
-				},
-				YAxis:
-					{
-						spokeColor: "grey",
-						text: "Cumulative Months",
-						// fontSize: 10,
-						// baseFontSize: 5,
-						max: 35,
-						min: 1,
-						//font: "Lucida Sans Unicode",
-						background: "#FFFFFF",
-						titleBackground: "#ff9900"
-					},
-				XAxis:
-					{
-						spokeColor: "grey",
-						text: "Month of Year",
-						// fontSize: 10,
-						// baseFontSize: 5,
-						//font: "TimesNewRoman",
-						background: "#FFFFFF",
-						titleBackground: "#FF9900"
-					}
+					background: "lightGrey",
+					titleBackground: "#FF9900",
+					dateFormat: "MM",
+					borderColor: "transparent"
+				}
 
 				,
-				Legend:
-					{
-						names: ["Cumulative\nMonths", "Months\nRemaining", "Value of\nMonth", "Days in\nMonth", "I like\nOranges"],
-						text: "Legend",
-						background: "White",
-						altBackground: "#ff9900"
-					}//*/
-			}
+			Legend:
+				{
+					names: ["Cumulative\nMonths", "Months\nRemaining", "Value of\nMonth", "Days in\nMonth", "I like\nOranges"],
+					text: "Legend",
+					background: "lightGrey",
+					altBackground: "#ff9900",
+					borderColor: "Transparent",
+					highlightColor: "#9ECAE1"
+				}//*/
+			,
+			Formula:
+				{
+					font: null,
+					borderColor: "Transparent",
+					background: "#9ECAE1",
+					fontSize: null
+				},
+			Correlation:
+				{
+					font: null,
+					borderColor: "Transparent",
+					background: "#9ECAE1",
+					fontSize: null
+				}
+		}
 		var data =
 			[
 				[
-						'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+						[2016, 0, 1], [2016, 1, 1], [2016, 2, 1], [2016, 3, 1], [2016, 4, 1], [2016, 5, 1], [2016, 6, 1], [2016, 7, 1], [2016, 8, 1], [2016, 9, 1], [2016, 10, 1], [2016, 11, 1]
 				],
 				[
 						1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12
@@ -108,8 +129,6 @@
 		catch (err) {
 			alert("!!Uncaught Error :" + err.message);
 		}
-
-		//chart.DrawCorrelation();
 
 		var chart = new ScatterChartApi(body, settings, data);
 

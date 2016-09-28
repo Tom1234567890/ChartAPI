@@ -15,7 +15,7 @@ function ____ChartApi(p_element, p_settings, p_data) {
 		if (me.g_legend == undefined) return false;
 
 		return true;
-	}
+	};
 
 	function DrawChartContainer() { };
 
@@ -36,8 +36,8 @@ function ____ChartApi(p_element, p_settings, p_data) {
 		SizeData();
 
 
-		if (DrawLegend()) console.log("Legend Rendered");
-		DrawChartContainer(); console.log("Chart Container Rendered");
+		if (DrawLegend()) me.Alert("Legend Rendered", 0);
+		DrawChartContainer(); me.Alert("Chart Container Rendered", 0);
 
 		// Function used by each child chart.
 		this.DrawChart();
@@ -49,10 +49,10 @@ function ____ChartApi(p_element, p_settings, p_data) {
 
 		var widget = new ChartApiCorrelaitonWidget(this.g_data[0], p_element, p_settings);
 
-		console.log("### Render Correlation ###");
+		me.Alert("### Render Correlation ###", 1);
 		for (var i = this.g_data.length - 1; i > 0; i--) {
 			DrawCorrelation(widget.GetCorrelation(this.g_data[i]), i - 1);
-		}
+		};
 
 		return widget;
 	}
@@ -62,14 +62,14 @@ function ____ChartApi(p_element, p_settings, p_data) {
 
 		var widget = new ChartApiCorrelaitonWidget(this.g_data[0], p_element, p_settings);
 
-		console.log("### Calculating Correlation ###");
+		me.Alert("### Calculating Correlation ###", 0);
 
 		for (var i = this.g_data.length - 1; i > 0; i--) {
 			widget.GetCorrelation(this.g_data[i]);
-		}
+		};
 
 		return widget;
-	}
+	};
 	*/
 }
 

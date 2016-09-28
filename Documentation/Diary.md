@@ -1,3 +1,79 @@
+###28-Sep-16
+
+Wow, it's been a while.
+
+Development has stalled while I've been busy with interviews and finishing my course (Four pages of explaining things I know.. it's not a fun part) so other obligations have been taking my attention away.
+
+Wrapping up this sprint has taken up a lot of time, and I'm really proud of what I have achieved. I've solved a lot of the issues that where holding me back technically, and I've done so in a way that allows for future growth.
+
+I've also wrapped up development on the proportion chart in order to bring it in line with the original vision. It's almost complete, only lacking in one or two ways at this point. The correlation chart is however completely finished and I don't think I'll be making any more changes outside of the correlation formula itself.
+
+But I digress, here is the mission statement I gave myself:
+
+The fabulous testing automation
+
+We now have a new file called Testing.html. I introduced this last commit, where it would generate a random amount of information and render it with a settings object that only contains the barest minimum.
+
+This has now been extended to all charts we currently have and the correlation widget. There is also an option to randomize the chart sizes, which hasn't resulted in anything problematic yet but I can imagine it may have some effect on text sizing in the future.
+
+I didn't create this first as I expected, however I have run through a full suite of testing with it as of writing this.
+
+Speaking of, I finally resolved my issue with Edge & IE 11. They cached some broken version of my page and refuse to give it up, as evidenced by the testing page working on both browsers. I still don't know why deleting the cache won't fix my original pages, likely something to do with security? Either way the pages work if I recreate the page using a different file.
+
+So on my local machine I have a duplicated file called FuckMicrosoft.html while that issue is ongoing.
+
+- The grand data refactoring.
+
+Data is now held in a 3D array. This was relatively painless, a lot of the activity was renaming different ways of accessing this data.
+
+The variable X Axis is now in full effect and is in fact in the new testing page. The X Axis now takes either a string, a number or a array of three numbers that will be parsed into a date.
+
+This uses the date object, which is a default JavaScript object. This has a value which is used to plot it along the variable axis, and uses a base function to parse the date into a string. The date format can be set in the settings incidentally.
+
+- The harrowing object encapsulation.
+
+I finished this first, the private functions now reference a variable called me. Me == this. So while this doesn't cut down on the number of global variables to a significant degree, it does at least make it a little shorter.
+
+- The glorious base functionality expansion.
+
+Truncation
+
+Truncation is now handled by a base function on the lowest level object. This uses the system I devised before where it cuts down to a set number of characters.
+
+Text Overlap detection.
+
+We now create a textstring, where we input every text area and it deletes any overlap. This doesn't work with vertical text for whatever reason, however vertical text is due for a re-haul so I won't loose any sleep about it. 
+
+Chart Logging
+
+There is now a base function called Alert which handles any and all notifications to the user.
+
+I've done some fun things with this, we now time how long it takes to render the chart and also get to use indentation in the chart log. Finally to reduce the spam we have a global debug flag. If the flag is inactive almost all chart messages are ignored.
+
+- The beautiful user interaction addition.
+
+Alright, this is where the bulk of the development has gone.
+
+Last time I discussed using a specialised event rectangle function. I've since found a better solution, we use a generic event function that can be applied to any kind of element.
+
+This means applying event listeners to the elements that will call a function from back inside the chart API. We can also pass information by applying a nonsense attribute to the element that can be read in later.
+
+Using this framework I was able to complete the legend intractability that I intended. When you click a series in the single value charts it will switch to just that series. When you click the header it will show all of them again. This also counts for correlation.
+
+The proportion chart will show the total of each series, and then clicking the legend or the relevant series will break down the series from the total to the categories.
+
+Hovering over a value in either chart will bring up hovertext. This is really helpful for pinpointing exact values, however the placement isn't as accurate as I'd like on the proportion chart.
+
+Smaller improvements:
+
+Almost all elements now have a customisable border. I have opted for a transparent one for the demo gallery.
+
+The legend has been moved back into the base chart API, where it will finally be staying. There was a surprising amount of indecision behind this.
+
+Alright, that wraps up my first sprint. There is a host of bug's I'll be working on before I'll consider this finished but all features have been added.
+
+Finally some somewhat arbitrary news. I'll be versioning these once I can figure out how to. Once the bugs have been fixed and a couple new charts are added this'll be version one. Yay!
+
 ###12-Sep-16
 
 Halfway!

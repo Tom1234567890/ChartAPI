@@ -6,29 +6,118 @@
 	<title></title>
 	<script type="text/javascript" src="../Code/ChartApi.js"></script>
 	<script type="text/javascript" src="../Code/SeriesChartApi.js"></script>
+	<script type="text/javascript" src="../Code/ComparisonChartApi.js"></script>
 	<script type="text/javascript" src="../Code/ChartApiCorrelationWidget.js"></script>
-	
 </head>
 <body>
+	<div id="Scatter"></div>
+	<br />
+	<div id="Line"></div>
+	<br />
+	<div id="Comparison"></div>
 	<script>
-		var settings = null;
-		var data =
-			[
-					[
-						'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
-					]
-			]
+		var randomSizes = false;
+
+		function GenerateChartElement(p_parent) {
+			if (!randomSizes) return p_parent;
+
+			// Generate the element as a child
+			var g_canvas = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+			if (g_canvas == undefined || g_canvas == null) {
+				throw Error("Unable to generate canvas element");
+			}
+
+			var g_sizeX = 50 + Math.round(Math.random() * 950);
+			var g_sizeY = 50 + Math.round(Math.random() * 950);
+
+			// Set Height
+			g_canvas.setAttributeNS(null, "viewBox", "0 0 " + g_sizeX + " " + g_sizeY);
+			g_canvas.setAttributeNS(null, "width", g_sizeX);
+			g_canvas.setAttributeNS(null, "height", g_sizeY);
+			// Add to document
+			p_parent.appendChild(g_canvas);
+
+			return g_canvas;
+
+		}
+
+		var settings = {
+			Legend:
+						{
+							names: ["Cumulative\nMonths", "Months\nRemaining", "Value of\nMonth", "Days in\nMonth", "I like\nOranges", "Yet more test data", "US Opinon Polls"]
+						}
+		};
+		var data = [];
+		data[0] = [];
+		for (var i2 = 0; i2 < 11; i2++) {
+			data[0][i2] = Math.round(Math.random() * 2000);
+		}
 		for (var i = 1; i < 8; i++) {
 			data[i] = [];
 			for (var i2 = 0; i2 < data[0].length; i2++) {
 				data[i][i2] =
-					(.5 - Math.random()) * 2000;
+					(/*.5*/ - Math.random()) * 2000;
 			}
 		}
-		var body = /*document.getElementById("body"); //*/document.body;
+
+		var body = document.getElementById("Line"); //*/document.body;
 
 		try {
-			var chart = new LineChartApi(body, settings, data);
+			var element = GenerateChartElement(body);
+
+			var chart = new LineChartApi(element, settings, data);
+			if (!chart.Render()) {
+				alert("Err0r");
+			}
+
+			var element = GenerateChartElement(body);
+
+			var correlation = chart.RenderCorrelation(element, settings);
+			if (!correlation.Render()) {
+				alert("Err0r");
+			}
+		}
+		catch (err) {
+			alert("!!Uncaught Error :" + err.message);
+		}
+
+		var body = document.getElementById("Scatter"); //*/document.body;
+
+		try {
+			var element = GenerateChartElement(body);
+
+			var chart = new ScatterChartApi(element, settings, data);
+
+			if (!chart.Render()) {
+				alert("Err0r");
+			}
+
+			var element = GenerateChartElement(body);
+
+			var correlation = chart.RenderCorrelation(element, settings);
+			if (!correlation.Render()) {
+				alert("Err0r");
+			}
+		}
+		catch (err) {
+			alert("!!Uncaught Error :" + err.message);
+		}
+
+		var body = document.getElementById("Comparison"); //*/document.body;
+		var settings = {
+			ChartArea:
+				{
+					borderColor: "white"
+				},
+			Legend:
+						{
+							names: ["Cumulative\nMonths", "Months\nRemaining", "Value of\nMonth", "Days in\nMonth", "I like\nOranges", "Yet more test data", "US Opinon Polls"]
+						}
+		};
+		try {
+			var element = GenerateChartElement(body);
+
+			var chart = new ProportionChartApi(element, settings, data);
 			if (!chart.Render()) {
 				alert("Err0r");
 			}
