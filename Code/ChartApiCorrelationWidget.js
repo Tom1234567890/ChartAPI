@@ -33,23 +33,13 @@ function ChartApiCorrelaitonWidget(p_categories, p_element, p_settings, p_parent
 			maxY: 0,
 			borderColor: "#000000"
 		}
-	this.g_title =
-		{
-			// This reference is for the text directly, unlike the other references for the parent element.
-			reference: null,
-			text: "",
-			font: null,
-			background: "#FFFFFF",
-			borderColor: "#000000",
-			fontSize: null
-		};
 	this.g_formula =
 		{
 			reference: null,
 			font: null,
 			background: "#FFFFFF",
 			borderColor: "#000000",
-			fontSize: null,
+			fontSize: 5,
 			minX: 0,
 			minY: 0,
 			maxX: 0,
@@ -62,7 +52,7 @@ function ChartApiCorrelaitonWidget(p_categories, p_element, p_settings, p_parent
 			font: null,
 			background: "#FFFFFF",
 			borderColor: "#000000",
-			fontSize: null,
+			fontSize: 5,
 			minX: 0,
 			minY: 0,
 			maxX: 0,
@@ -125,40 +115,16 @@ function ChartApiCorrelaitonWidget(p_categories, p_element, p_settings, p_parent
 					altBackground: p_settings.Legend.altBackground != undefined ? p_settings.Legend.altBackground : "#666666",
 					borderColor: p_settings.Legend.borderColor != undefined ? p_settings.Legend.borderColor : "#000000",
 					highlightColor: p_settings.Legend.highlightColor != undefined ? p_settings.Legend.highlightColor : "#888888",
+					fontSize: p_settings.Legend.fontSize != undefined ? p_settings.Legend.fontSize : 3,
 					names: p_settings.Legend.names,
-					fontSize: null,
-					baseFontSize: null,
+					baseFontSize: p_settings.Legend.baseFontSize != undefined ? p_settings.Legend.baseFontSize : 2,
 					minX: 0,
 					minY: 0,
 					maxX: 0,
 					maxY: 0
 				}
 		}
-	}
-
-	function SizeFonts() {
-		// #### Chart Font Sizes ####
-		var baseFontSize = me.g_size / 100;
-		// Title
-		if (me.g_title.fontSize == null || me.g_title.fontSize < 0) {
-			me.g_title.fontSize = 5 * baseFontSize;
-		}
-		// Legend
-		if (me.g_legend != undefined && (me.g_legend.fontSize == null || me.g_legend.fontSize < 0)) {
-			me.g_legend.fontSize = 3 * baseFontSize;
-		}
-		if (me.g_legend != undefined && (me.g_legend.baseFontSize == null || me.g_legend.baseFontSize < 0)) {
-			me.g_legend.baseFontSize = 2 * baseFontSize;
-		}
-		// Formula
-		if (me.g_formula.fontSize == null || me.g_formula.fontSize < 0) {
-			me.g_formula.fontSize = 5 * baseFontSize;
-		}
-		// Correlation
-		if (me.g_correlation.fontSize == null || me.g_correlation.fontSize < 0) {
-			me.g_correlation.fontSize = 5 * baseFontSize;
-		}
-	}
+	};
 
 	function SizeWidget() {
 		// #### Formula ####
@@ -185,7 +151,7 @@ function ChartApiCorrelaitonWidget(p_categories, p_element, p_settings, p_parent
 			me.g_legend.maxX = 20;
 			me.g_legend.maxY = 80;
 		}
-	}
+	};
 
 	function DrawBaseAreas() {
 		// General Setup
@@ -199,7 +165,7 @@ function ChartApiCorrelaitonWidget(p_categories, p_element, p_settings, p_parent
 		// Title me.Text
 		var textArea = me.TextArea(null, me.g_title.font, me.g_title.fontSize, false);
 		me.g_title.reference = me.Text(textArea, 50, 10, me.g_title.text, 8);
-	}
+	};
 
 	function DrawLegend() {
 		// #### Legend ####
@@ -345,7 +311,7 @@ function ChartApiCorrelaitonWidget(p_categories, p_element, p_settings, p_parent
 		// Formula Text
 		var textArea = me.TextArea(me.g_formula.reference, me.g_formula.font, me.g_formula.fontSize, false);
 		me.Text(textArea, me.g_formula.minX + (me.g_formula.maxX / 2), me.g_formula.minY + (me.g_formula.maxY / 2), me.g_results[series][2]);
-	}
+	};
 
 	function DrawCorrelation() {
 		if (me.g_correlation.reference != null) {
@@ -392,12 +358,12 @@ function ChartApiCorrelaitonWidget(p_categories, p_element, p_settings, p_parent
 			me.g_correlation.minY + (me.g_correlation.maxY / 2),
 			text,
 			8);
-	}
+	};
 
 	// #### User Interfaces ####
 
 
-	function LegendClick (e) {
+	function LegendClick(e) {
 		var clickValue = e.target.getAttribute('clickValue');
 
 		drawSeries = clickValue
@@ -429,19 +395,27 @@ function ChartApiCorrelaitonWidget(p_categories, p_element, p_settings, p_parent
 
 		// #### X Axis ####
 
-		var isVariableXAxis = typeof (p_categories[0]) == "number"
-			|| (typeof (p_categories[0]) == "object" && p_categories[0].toString() != null);
-		var isDate = (typeof (p_categories[0]) == "object" && p_categories[0].toString() != null);
+		var isVariableXAxis = typeof (g_categories[0]) == "number"
+			|| (typeof (g_categories[0]) == "object");
+		var isDate = (typeof (g_categories[0]) == "object");
 
-		if (isVariableXAxis && isDate) {
+		var categories = [];
+
+		if (isDate) {
 			// Convert date to number
-			for (var i = 0; i < p_categories.length; i++) {
-				p_categories[i] = p_categories[i].valueOf();
+			for (var i = 0; i < g_categories.length; i++) {
+				// Create the date object
+				var d = new Date(g_categories[i][0], g_categories[i][1], g_categories[i][2]);
+				// Replace the array with the date object
+				categories[i] = d.valueOf();
 			}
-		} else if (!isVariableXAxis) {
+		} else if (isVariableXAxis) {
+			categories = g_categories;
+		}
+		else if (!isVariableXAxis) {
 			// Replace with numeral
-			for (var i = 0; i < p_categories.length; i++) {
-				p_categories[i] = i;
+			for (var i = 0; i < g_categories.length; i++) {
+				categories[i] = i;
 			}
 		}
 
@@ -449,16 +423,16 @@ function ChartApiCorrelaitonWidget(p_categories, p_element, p_settings, p_parent
 		{
 			var i = 0;
 
-			while (i < p_categories.length) {
-				meanX += p_categories[i];
+			while (i < categories.length) {
+				meanX += categories[i];
 
 				i++;
 			}
 			meanX /= i;
 		}
 
-		var maxX = Math.max.apply(null, p_categories);
-		var minX = Math.min.apply(null, p_categories);
+		var maxX = Math.max.apply(null, categories);
+		var minX = Math.min.apply(null, categories);
 
 
 		var meanY = 0;
@@ -481,9 +455,9 @@ function ChartApiCorrelaitonWidget(p_categories, p_element, p_settings, p_parent
 		var bottom = 0;
 
 		for (var i = 0; i < p_data.length; i++) {
-			top += (p_categories[i] - meanX) * (p_data[i] - meanY);
+			top += (categories[i] - meanX) * (p_data[i] - meanY);
 
-			bottom += Math.pow(p_categories[i] - meanX, 2);
+			bottom += Math.pow(categories[i] - meanX, 2);
 		}
 
 		var M = top / bottom;
@@ -500,8 +474,8 @@ function ChartApiCorrelaitonWidget(p_categories, p_element, p_settings, p_parent
 			var bottom = 0;
 			var i = 0;
 
-			while (i < p_categories.length) {
-				top += Math.pow(p_categories[i] - meanX, 2);
+			while (i < categories.length) {
+				top += Math.pow(categories[i] - meanX, 2);
 
 				i++;
 			}
@@ -530,8 +504,8 @@ function ChartApiCorrelaitonWidget(p_categories, p_element, p_settings, p_parent
 		{
 			var i = 0;
 
-			while (i < p_categories.length) {
-				correlation += ((p_categories[i] - meanX) / deviationX)
+			while (i < categories.length) {
+				correlation += ((categories[i] - meanX) / deviationX)
 					* ((p_data[i] - meanY) / deviationY);
 
 				i++;
@@ -550,10 +524,9 @@ function ChartApiCorrelaitonWidget(p_categories, p_element, p_settings, p_parent
 	}
 
 	this.Render = function () {
-		if (this.DEBUG) {
-			console.group();
-			console.time("Chart API");
-		}
+		console.group(); // Indent console
+		// End timing
+		if (this.DEBUG) console.time("Chart API");
 		me.Alert("#### Rendering Widget ####", 1);
 		try {
 			if (this.g_canvas == null || this.g_canvas == undefined) {
@@ -562,7 +535,8 @@ function ChartApiCorrelaitonWidget(p_categories, p_element, p_settings, p_parent
 
 			LoadSettings();
 			SizeWidget();
-			SizeFonts();
+
+			me.Alert("#### Drawing Chart ####", 1);
 
 			DrawBaseAreas(); me.Alert("Title Rendered", 0);
 			if (DrawLegend()) me.Alert("Legend Rendered", 0);
@@ -570,20 +544,20 @@ function ChartApiCorrelaitonWidget(p_categories, p_element, p_settings, p_parent
 			DrawCorrelation(); me.Alert("Correlation Rendered", 0);
 
 			me.Alert("#### Render Complete ####", 1);
-			if (this.DEBUG) {
-				console.timeEnd("Chart API");
-				console.groupEnd();
-			}
+			
+			// End timing
+			if (this.DEBUG) console.timeEnd("Chart API");
+			console.groupEnd(); // End indentation
 			return true;
 		}
 		catch (ex) {
-			me.Alert("Stopped Rendering due to exception: " + ex.message, 3)
-			me.Alert("Line: " + ex.lineNumber, 0);
+			me.Alert("Stopped Rendering due to exception: " + ex.message, 4);
 			me.Alert(ex.stack, 0);
-			if (this.DEBUG) {
-				console.timeEnd("Chart API");
-				console.groupEnd();
-			}
+
+			// End timing
+			if (this.DEBUG) console.timeEnd("Chart API");
+			console.groupEnd(); // End indentation
+
 			if (this.g_canvas != null && this.g_canvas != undefined) {
 				this.Remove(true);
 				return false;

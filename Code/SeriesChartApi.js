@@ -98,15 +98,24 @@ function SeriesChartApi(p_element, p_settings, p_data) {
 		// XAxis Spokes
 
 		if (typeof (me.g_data[0][0]) == "number" ||
-			(typeof (me.g_data[0][0]) == "object" && me.g_data[0][0].toString() != null)) {
+			(typeof (me.g_data[0][0]) == "object")) {
 
 			// Variable X Axis
-			var isDate = (typeof (me.g_data[0][0]) == "object" && me.g_data[0][0].toString() != null);
+			var isDate = (typeof (me.g_data[0][0]) == "object");
 			for (var i = 0; i < me.g_data[1].length; i++) {
-				var date = me.g_data[0][i];
-				var value = isDate ? date : date.valueOf();
-				var text = isDate ? me.FormatDate(date, me.g_xAxis.dateFormat) : date.toString();
+				var value;
+				var text;
+				if (isDate) {
+					var d = new Date(me.g_data[0][i][0], me.g_data[0][i][1], me.g_data[0][i][2]);
 
+					value = d.valueOf();
+
+					text = me.FormatDate(d, me.g_xAxis.dateFormat)
+				} else {
+					value = me.g_data[0][i];
+
+					text = value.toString();
+				}
 				var nextX = (value - me.g_xAxis.min) / (me.g_xAxis.max - me.g_xAxis.min);
 				var x = (nextX * me.g_chartArea.maxX) + me.g_chartArea.minX;
 
@@ -173,23 +182,36 @@ function SeriesChartApi(p_element, p_settings, p_data) {
 		var increment = me.g_chartArea.maxX / (me.g_data[1].length - 1);
 
 		var isVariableXAxis = typeof (me.g_data[0][0]) == "number"
-			|| (typeof (me.g_data[0][0]) == "object" && me.g_data[0][0].toString() != null);
-		var isDate = (typeof (me.g_data[0][0]) == "object" && me.g_data[0][0].toString() != null);
+			|| (typeof (me.g_data[0][0]) == "object");
+		var isDate = (typeof (me.g_data[0][0]) == "object");
 
 		for (var i = 0; i < me.g_data[1].length; i++) {
 			var x;
+			var color = me.g_xAxis.spokeColor;
+
 			if (isVariableXAxis) {
-				valueX = isDate ? me.g_data[0][i] : me.g_data[0][i].valueOf();
+				var valueX;
+				if (isDate) {
+					// Create the date object
+					var d = new Date(me.g_data[0][i][0], me.g_data[0][i][1], me.g_data[0][i][2]);
+					// Replace the array with the date object
+					valueX = d.valueOf();
+				} else {
+					valueX = me.g_data[0][i];
+				}
 
 				var nextX = (valueX - me.g_xAxis.min) / (me.g_xAxis.max - me.g_xAxis.min);
 				x = (nextX * me.g_chartArea.maxX) + me.g_chartArea.minX;
+
+				if (valueX == me.g_xAxis.min || valueX == me.g_xAxis.max) {
+					color = "#000000";
+				}
 			} else {
 				x = me.g_chartArea.minX + (i * increment);
-			}
 
-			var color = me.g_xAxis.spokeColor;
-			if (i == 0 || i == me.g_data[1].length - 1) {
-				color = "#000000";
+				if (i == 0 || i == me.g_data[1].length - 1) {
+					color = "#000000";
+				}
 			}
 
 			me.Line(me.g_chartArea.reference,
@@ -324,12 +346,14 @@ function SeriesChartApi(p_element, p_settings, p_data) {
 			me.g_xAxis.max = max;
 			me.g_xAxis.min = min;
 		}
-		else if (typeof (me.g_data[0][0]) == "object" && me.g_data[0][0].toString() != null) {
+		else if (typeof (me.g_data[0][0]) == "object") {
 
 			// We are working with dates
 			var seconds = [];
 			for (var i = 0; i < me.g_data[0].length; i++) {
-				seconds[i] = me.g_data[0][i].valueOf();
+				var d = new Date(me.g_data[0][i][0], me.g_data[0][i][1], me.g_data[0][i][2]);
+
+				seconds[i] = d.valueOf();
 			}
 
 			var max = Math.max.apply(null, seconds);
@@ -375,7 +399,6 @@ function SeriesChartApi(p_element, p_settings, p_data) {
 
 	// Draw out correlation on canvas.
 	this.RenderCorrelation = function (p_element, p_settings) {
-
 		var widget = new ChartApiCorrelaitonWidget(this.g_data[0], p_element, p_settings, this);
 
 		me.Alert("### Render Correlation ###", 1);
@@ -424,105 +447,118 @@ function LineChartApi(p_element, p_settings, p_data) {
 	var me = this;
 
 	// Helper function for DrawChart()
-	function DrawPoint(p_colorNB, p_data) {
-		if (p_data == undefined || p_data == null) {
+	function DrawPoint(p_series) {
+		var TotalData = me.GetFilteredData(p_series);
+		if (TotalData[0] == undefined || TotalData[0] == null) {
 			return false;
 		}
-		// Points in Graph
-		var isDate = (typeof (me.g_data[0][0]) == "object" && me.g_data[0][0].toString() != null);
-		var isVariableXAxis = typeof (me.g_data[0][0]) == "number"
-			|| (typeof (me.g_data[0][0]) == "object" && me.g_data[0][0].toString() != null);
 
-		var index = i;
-		var index2 = i + 1;
-		var sortedArray;
-		if (isVariableXAxis) {
-			sortedArray = me.g_data[0].sort(function (a, b) { return a - b });
-			index = me.g_data[0].indexOf(sortedArray[0]);
-			index2 = me.g_data[0].indexOf(sortedArray[1]);
-		}
+		// ### Variables ###
+		var categories = TotalData[0];
+		var data = TotalData[1]
+		var isVariableXAxis = TotalData[2];
+		var isDate = TotalData[3];
 
-		var nextY = 1 - ((p_data[index] - me.g_yAxis.min) / (me.g_yAxis.max - me.g_yAxis.min));
-
-		var incrementX = me.g_chartArea.maxX / (p_data.length - 1);
-		var valueX = isDate ? me.g_data[0][index] : me.g_data[0][index].valueOf();
+		var colorNumber = p_series - 1;
+		// Derived values
+		var incrementX = me.g_chartArea.maxX / (data.length - 1);
+		var valueX = isDate ? categories[0].valueOf() : categories[0];
+		var nextY = 1 - ((data[0] - me.g_yAxis.min) / (me.g_yAxis.max - me.g_yAxis.min));
 
 		var pointBorder = me.g_chartArea.pointBorder == null
-			|| me.g_chartArea.pointBorder[p_colorNB] == null
-			? me.g_chartArea.color[p_colorNB] : me.g_chartArea.pointBorder[p_colorNB];
+			|| me.g_chartArea.pointBorder[colorNumber] == null
+			? me.g_chartArea.color[colorNumber] : me.g_chartArea.pointBorder[colorNumber];
 
-
-		for (var i = 0; i < (p_data.length - 1) ; i++) {
+		for (var i = 0; i < (data.length - 1) ; i++) {
 			// Get X
 			var x1;
 			var x2;
 
-			index = i;
-			index2 = i + 1;
-
-			if (!isVariableXAxis) {
-				x1 = me.g_chartArea.minX + (index * incrementX);
-				x2 = me.g_chartArea.minX + (index2 * incrementX);
-			} else {
-				index = me.g_data[0].indexOf(sortedArray[i]);
-				index2 = me.g_data[0].indexOf(sortedArray[i + 1]);
-
+			if (isVariableXAxis) {
 				var nextX = (valueX - me.g_xAxis.min) / (me.g_xAxis.max - me.g_xAxis.min);
 				var x1 = (nextX * me.g_chartArea.maxX) + me.g_chartArea.minX;
 
-				valueX = isDate ? me.g_data[0][index2] : me.g_data[0][index2].valueOf();
+				valueX = isDate ? categories[i + 1].valueOf() : categories[i + 1];
 
 				var nextX = (valueX - me.g_xAxis.min) / (me.g_xAxis.max - me.g_xAxis.min);
 				var x2 = (nextX * me.g_chartArea.maxX) + me.g_chartArea.minX;
+			} else {
+				x1 = me.g_chartArea.minX + (i * incrementX);
+				x2 = me.g_chartArea.minX + ((i + 1) * incrementX);
 			}
+			// Get Y
+			var y1 = (nextY * me.g_chartArea.maxY) + me.g_chartArea.minY;
+			nextY = 1 - ((data[i + 1] - me.g_yAxis.min) / (me.g_yAxis.max - me.g_yAxis.min));
 
-			if (p_data[index2] == undefined || p_data[index2] == null ||
-				p_data[index] == undefined || p_data[index] == null) {
-				if (!(p_data[index] == undefined || p_data[index] == null)) {
-					me.Circle(me.g_chartArea.reference,
-						x1,
-						y1,
-						0.75,
-						me.g_chartArea.color[p_colorNB],
-						pointBorder);
+			var y2 = (nextY * me.g_chartArea.maxY) + me.g_chartArea.minY;
+			// Check if a point is missing
+			if (isNaN(y1) || isNaN(y2)) {
+
+				if (!isNaN(y1)) {
+					// if this point exists, draw it out
+					var category = isDate ? me.FormatDate(categories[i], me.g_xAxis.dateFormat) : categories[i];
+
+					var Circle = me.Circle(me.g_chartArea.reference, x1, y1, 0.75, me.g_chartArea.color[colorNumber], pointBorder);
+
+					me.Event(Circle,
+						"mouseover",
+						me.HoverText,
+						data[i] + ', ' + category);
+
+					me.Event(Circle,
+						"mouseout",
+						me.EndHoverText);
 				}
 
-				nextY = 1 - ((p_data[index2] - me.g_yAxis.min) /
-					(me.g_yAxis.max - me.g_yAxis.min));
+				if (!isNaN(y2)) {
+					// if this point exists, draw it out
+					var category = isDate ? me.FormatDate(categories[i + 1], me.g_xAxis.dateFormat) : categories[i + 1];
+
+					var Circle = me.Circle(me.g_chartArea.reference, x2, y2, 0.75, me.g_chartArea.color[colorNumber], pointBorder);
+
+					me.Event(Circle,
+						"mouseover",
+						me.HoverText,
+						data[i + 1] + ', ' + category);
+
+					me.Event(Circle,
+						"mouseout",
+						me.EndHoverText);
+				}
+
 				continue;
 			}
 
-			var y1 = (nextY * me.g_chartArea.maxY) + me.g_chartArea.minY;
-			nextY = 1 - ((p_data[index2] - me.g_yAxis.min) / (me.g_yAxis.max - me.g_yAxis.min));
+			// Draw the line
+			me.Line(me.g_chartArea.reference, x1, y1, x2, y2, me.g_chartArea.color[colorNumber]);
 
-			var y2 = (nextY * me.g_chartArea.maxY) + me.g_chartArea.minY;
-			me.Line(me.g_chartArea.reference, x1, y1, x2, y2, me.g_chartArea.color[p_colorNB]);
+			// Draw the point
+			var category = isDate ? me.FormatDate(categories[i], me.g_xAxis.dateFormat) : categories[i];
 
-			var category = isDate ? me.FormatDate(me.g_data[0][index], me.g_xAxis.dateFormat) : me.g_data[0][index];
-
-			var Circle = me.Circle(me.g_chartArea.reference, x1, y1, 0.75, me.g_chartArea.color[p_colorNB], pointBorder);
+			var Circle = me.Circle(me.g_chartArea.reference, x1, y1, 0.75, me.g_chartArea.color[colorNumber], pointBorder);
 
 			me.Event(Circle,
 				"mouseover",
 				me.HoverText,
-				p_data[index] + ', ' + category);
+				data[i] + ', ' + category);
 
 			me.Event(Circle,
 				"mouseout",
 				me.EndHoverText);
 
-			if (i == p_data.length - 2) {
+			if (i == (data.length - 2))
+			{
+				// this is the last point
+				var category = isDate ? me.FormatDate(categories[i + 1], me.g_xAxis.dateFormat) : categories[i + 1];
 
-				var category = isDate ? me.FormatDate(me.g_data[0][index2], me.g_xAxis.dateFormat) : me.g_data[0][index2];
+				var Circle = me.Circle(me.g_chartArea.reference, x2, y2, 0.75, me.g_chartArea.color[colorNumber], pointBorder);
 
-				var point = me.Circle(me.g_chartArea.reference, x2, y2, 0.75, me.g_chartArea.color[p_colorNB], pointBorder);
+				me.Event(Circle,
+					"mouseover",
+					me.HoverText,
+					data[i + 1] + ', ' + category);
 
-				me.Event(point,
-				"mouseover",
-				me.HoverText,
-				p_data[index2] + ', ' + category);
-
-				me.Event(point,
+				me.Event(Circle,
 					"mouseout",
 					me.EndHoverText);
 			}
@@ -536,11 +572,12 @@ function LineChartApi(p_element, p_settings, p_data) {
 
 
 	this.DrawChart = function () {
-		for (var i = this.g_data.length - 1; i > 0; i--) {
-			if (me.drawSeries != -1 && i != me.drawSeries) continue;
-
-			DrawPoint(i - 1, this.g_data[i]);
+		if (me.drawSeries == -1) {
+			for (var i = 1; i < this.g_data.length; i++) {
+				DrawPoint(i);
+			}
 		}
+		else DrawPoint(me.drawSeries);
 	};
 };
 
@@ -555,79 +592,117 @@ function ScatterChartApi(p_element, p_settings, p_data) {
 	var me = this;
 
 	// Helper function for DrawChart()
-	function DrawPoint(p_colorNB, p_data) {
-		if (p_data == undefined || p_data == null) {
-			return false
+	function DrawPoint(p_series) {
+		var TotalData = me.GetFilteredData(p_series);
+		if (TotalData[0] == undefined || TotalData[0] == null) {
+			return false;
 		}
-		// Points in Graph
-		var isDate = (typeof (me.g_data[0][0]) == "object" && me.g_data[0][0].toString() != null);
 
-		var isVariableXAxis = typeof (me.g_data[0][0]) == "number"
-			|| (typeof (me.g_data[0][0]) == "object" && me.g_data[0][0].toString() != null);
+		// ### Variables ###
+		var categories = TotalData[0];
+		var data = TotalData[1]
+		var isVariableXAxis = TotalData[2];
+		var isDate = TotalData[3];
 
-		var nextY = 1 - ((p_data[0] - me.g_yAxis.min) / (me.g_yAxis.max - me.g_yAxis.min));
+		var colorNumber = p_series - 1;
+		// Derived values
+		var incrementX = me.g_chartArea.maxX / (data.length - 1);
+		var valueX = isDate ? categories[0].valueOf() : categories[0];
+		var nextY = 1 - ((data[0] - me.g_yAxis.min) / (me.g_yAxis.max - me.g_yAxis.min));
 
-		var incrementX = me.g_chartArea.maxX / (p_data.length - 1);
-		var valueX = isDate ? me.g_data[0][0] : me.g_data[0][0].valueOf();
+		var pointBorder = me.g_chartArea.pointBorder == null
+			|| me.g_chartArea.pointBorder[colorNumber] == null
+			? me.g_chartArea.color[colorNumber] : me.g_chartArea.pointBorder[colorNumber];
 
-		var pointBorder = me.g_chartArea.pointBorder == null || me.g_chartArea.pointBorder[p_colorNB] == null ? me.g_chartArea.color[p_colorNB] : me.g_chartArea.pointBorder[p_colorNB];
-
-		for (var i = 0; i < (p_data.length - 1) ; i++) {
+		for (var i = 0; i < (data.length - 1) ; i++) {
 			// Get X
 			var x1;
 			var x2;
 
-			if (!isVariableXAxis) {
-				x1 = me.g_chartArea.minX + (i * incrementX);
-				x2 = me.g_chartArea.minX + ((i + 1) * incrementX);
-			} else {
+			if (isVariableXAxis) {
 				var nextX = (valueX - me.g_xAxis.min) / (me.g_xAxis.max - me.g_xAxis.min);
 				var x1 = (nextX * me.g_chartArea.maxX) + me.g_chartArea.minX;
 
-				valueX = isDate ? me.g_data[0][i + 1] : me.g_data[0][i + 1].valueOf();
+				valueX = isDate ? categories[i + 1].valueOf() : categories[i + 1];
 
 				var nextX = (valueX - me.g_xAxis.min) / (me.g_xAxis.max - me.g_xAxis.min);
 				var x2 = (nextX * me.g_chartArea.maxX) + me.g_chartArea.minX;
+			} else {
+				x1 = me.g_chartArea.minX + (i * incrementX);
+				x2 = me.g_chartArea.minX + ((i + 1) * incrementX);
 			}
+			// Get Y
+			var y1 = (nextY * me.g_chartArea.maxY) + me.g_chartArea.minY;
+			nextY = 1 - ((data[i + 1] - me.g_yAxis.min) / (me.g_yAxis.max - me.g_yAxis.min));
 
-			if (p_data[i + 1] == undefined || p_data[i + 1] == null ||
-				p_data[i] == undefined || p_data[i] == null) {
-				if (!(p_data[i] == undefined || p_data[i] == null)) {
-					me.Circle(me.g_chartArea.reference, x1, y1, 0.75, me.g_chartArea.color[p_colorNB], pointBorder);
+			var y2 = (nextY * me.g_chartArea.maxY) + me.g_chartArea.minY;
+			// Check if a point is missing
+			if (isNaN(y1) || isNaN(y2)) {
+
+				if (!isNaN(y1)) {
+					// if this point exists, draw it out
+					var category = isDate ? me.FormatDate(categories[i], me.g_xAxis.dateFormat) : categories[i];
+
+					var Circle = me.Circle(me.g_chartArea.reference, x1, y1, 0.75, me.g_chartArea.color[colorNumber], pointBorder);
+
+					me.Event(Circle,
+						"mouseover",
+						me.HoverText,
+						data[i] + ', ' + category);
+
+					me.Event(Circle,
+						"mouseout",
+						me.EndHoverText);
 				}
 
-				nextY = 1 - ((p_data[i + 1] - me.g_yAxis.min) / (me.g_yAxis.max - me.g_yAxis.min));
+				if (!isNaN(y2)) {
+					// if this point exists, draw it out
+					var category = isDate ? me.FormatDate(categories[i + 1], me.g_xAxis.dateFormat) : categories[i + 1];
+
+					var Circle = me.Circle(me.g_chartArea.reference, x2, y2, 0.75, me.g_chartArea.color[colorNumber], pointBorder);
+
+					me.Event(Circle,
+						"mouseover",
+						me.HoverText,
+						data[i + 1] + ', ' + category);
+
+					me.Event(Circle,
+						"mouseout",
+						me.EndHoverText);
+				}
+
 				continue;
 			}
 
-			var y1 = (nextY * me.g_chartArea.maxY) + me.g_chartArea.minY;
-			nextY = 1 - ((p_data[i + 1] - me.g_yAxis.min) / (me.g_yAxis.max - me.g_yAxis.min));
+			// Draw the line
+			//me.Line(me.g_chartArea.reference, x1, y1, x2, y2, me.g_chartArea.color[colorNumber]);
 
-			var y2 = (nextY * me.g_chartArea.maxY) + me.g_chartArea.minY;
+			// Draw the point
+			var category = isDate ? me.FormatDate(categories[i], me.g_xAxis.dateFormat) : categories[i];
 
-			var category = isDate ? me.FormatDate(me.g_data[0][i], me.g_xAxis.dateFormat) : me.g_data[0][i];
+			var Circle = me.Circle(me.g_chartArea.reference, x1, y1, 0.75, me.g_chartArea.color[colorNumber], pointBorder);
 
-			var Circle = me.Circle(me.g_chartArea.reference, x1, y1, 0.75, me.g_chartArea.color[p_colorNB], pointBorder);
 			me.Event(Circle,
 				"mouseover",
 				me.HoverText,
-				p_data[i] + ', ' + category);
+				data[i] + ', ' + category);
 
 			me.Event(Circle,
 				"mouseout",
 				me.EndHoverText);
 
-			if (i == p_data.length - 2) {
-				var point = me.Circle(me.g_chartArea.reference, x2, y2, 0.75, me.g_chartArea.color[p_colorNB], pointBorder);
+			if (i == (data.length - 2)) {
+				// this is the last point
+				var category = isDate ? me.FormatDate(categories[i + 1], me.g_xAxis.dateFormat) : categories[i + 1];
 
-				var category = isDate ? me.FormatDate(me.g_data[0][i + 1], me.g_xAxis.dateFormat) : me.g_data[0][i + 1];
+				var Circle = me.Circle(me.g_chartArea.reference, x2, y2, 0.75, me.g_chartArea.color[colorNumber], pointBorder);
 
-				me.Event(point,
+				me.Event(Circle,
 					"mouseover",
 					me.HoverText,
-					p_data[i + 1] + ', ' + category);
+					data[i + 1] + ', ' + category);
 
-				me.Event(point,
+				me.Event(Circle,
 					"mouseout",
 					me.EndHoverText);
 			}
@@ -641,10 +716,11 @@ function ScatterChartApi(p_element, p_settings, p_data) {
 
 
 	this.DrawChart = function () {
-		for (var i = this.g_data.length - 1; i > 0; i--) {
-			if (me.drawSeries != -1 && i != me.drawSeries) continue;
-
-			DrawPoint(i - 1, this.g_data[i]);
+		if (me.drawSeries == -1) {
+			for (var i = 1; i < this.g_data.length; i++) {
+				DrawPoint(i);
+			}
 		}
+		else DrawPoint(me.drawSeries);
 	};
 }

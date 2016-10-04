@@ -168,26 +168,35 @@ function ProportionChartApi(p_element, p_settings, p_data) {
 	var me = this;
 
 	// Helper function for DrawChart()
-	function DrawSeries(p_data) {
-		if (p_data == undefined || p_data == null) {
+	function DrawSeries(p_series) {
+		var TotalData = me.GetFilteredData(p_series);
+		if (TotalData[0] == undefined || TotalData[0] == null) {
 			return false;
 		}
+
+		// ### Variables ###
+		var categories = TotalData[0];
+		var data = TotalData[1]
+		var isVariableXAxis = TotalData[2];
+		var isDate = TotalData[3];
+
+		var colorNumber = p_series - 1;
 
 		var x = me.g_chartArea.minX;
 		var prevText = null;
 
 		var textChain = [];
 
-		for (var i = 0; i < p_data.length; i++) {
+		for (var i = 0; i < categories.length; i++) {
 			// Draw Area
-			var x2 = (p_data[i] / me.g_yAxis.max) * me.g_chartArea.maxX;
+			var x2 = (data[i] / me.g_yAxis.max) * me.g_chartArea.maxX;
 			var spokeX = x + (x2 / 2);
 
 			var theColor;
 			if (me.drawSeries == -1) {
 				theColor = me.g_chartArea.color[i];
 			} else {
-				theColor = me.g_chartArea.color[me.drawSeries - 1];
+				theColor = me.g_chartArea.color[colorNumber];
 			}
 
 			var rect = me.Rect(
@@ -199,11 +208,11 @@ function ProportionChartApi(p_element, p_settings, p_data) {
 				theColor,
 				me.g_chartArea.borderColor);
 
-			var category = me.drawSeries == -1 ? me.g_legend.names[i] : /*me.g_legend.names[me.drawSeries - 1] + ',\n' +*/ me.g_data[0][i];
+			var category = isDate ? me.FormatDate(categories[i], me.g_xAxis.dateFormat) : categories[i];
 			me.Event(rect,
 				"mouseover",
 				me.HoverText,
-				p_data[i] + ',\n' + category);
+				data[i] + ',\n' + category);
 			me.Event(rect,
 				"mouseout",
 				me.EndHoverText);
@@ -223,7 +232,7 @@ function ProportionChartApi(p_element, p_settings, p_data) {
 				me.g_yAxis.minY + (me.g_yAxis.maxY / 4));
 
 			// Ensure we only get 5 characters. /,/g replaces all instances of ,
-			var text = +((p_data[i] / me.g_yAxis.max) * 100).toFixed(0);
+			var text = +((data[i] / me.g_yAxis.max) * 100).toFixed(0);
 			text += '%';
 
 			text = me.Text(textArea,
@@ -247,7 +256,11 @@ function ProportionChartApi(p_element, p_settings, p_data) {
 
 	// Function used to plot Proportion chart's
 	this.DrawChart = function () {
+		// Modify the Max
+
+
 		var data = new Array();
+
 		if (this.drawSeries == -1) {
 			for (var i = 1; i < this.g_data.length; i++) {
 				var sum = this.g_data[i].reduce(function (a, b) { return a + b });
@@ -259,11 +272,9 @@ function ProportionChartApi(p_element, p_settings, p_data) {
 		}
 
 		var max = data.reduce((pv, cv) => pv + cv, 0);
-
-
 		me.g_yAxis.max = max;
 
 
-		DrawSeries(data);
+		DrawSeries(this.drawSeries);
 	};
 }

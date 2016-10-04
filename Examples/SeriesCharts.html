@@ -9,6 +9,9 @@
 	<script type="text/javascript" src="../Code/ChartApiCorrelationWidget.js"></script>
 </head>
 <body>
+	<div id="Scatter"></div>
+	<br />
+	<div id="Line"></div>
 	<script>
 		var settings = {
 			/*
@@ -95,11 +98,10 @@
 					background: "#9ECAE1",
 					fontSize: null
 				}
-		}
-		var data =
-			[
+		};
+		var data = [
 				[
-						[2016, 0, 1], [2016, 1, 1], [2016, 2, 1], [2016, 3, 1], [2016, 4, 1], [2016, 5, 1], [2016, 6, 1], [2016, 7, 1], [2016, 8, 1], [2016, 9, 1], [2016, 10, 1], [2016, 11, 1]
+						/*'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec' //*/ [2016, 0, 1], [2016, 1, 1], [2016, 2, 1], [2016, 3, 1], [2016, 4, 1], [2016, 5, 1], [2016, 6, 1], [2016, 7, 1], [2016, 8, 1], [2016, 9, 1], [2016, 10, 1], [2016, 11, 1]
 				],
 				[
 						1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12
@@ -116,8 +118,9 @@
 				[
 						15, 34, 21, 7, 4, 22, 13, 11, 25, 21, 14, 17
 				]
-			]
-		var body = /*document.getElementById("body"); //*/document.body;
+		];
+
+		var body = document.getElementById("Line"); //*/document.body;
 
 		try {
 			var chart = new LineChartApi(body, settings, data);
@@ -125,24 +128,35 @@
 			if (!chart.Render()) {
 				alert("Err0r");
 			}
-		}
-		catch (err) {
-			alert("!!Uncaught Error :" + err.message);
-		}
 
-		var chart = new ScatterChartApi(body, settings, data);
+			var widget = chart.RenderCorrelation(body, settings);
 
-		try {
-			if (!chart.Render()) {
+			if (!widget.Render()) {
 				alert("Err0r");
 			}
 		}
 		catch (err) {
 			alert("!!Uncaught Error :" + err.message);
 		}
-		var body = /*document.getElementById("body"); //*/document.body;
-		var widget = chart.RenderCorrelation(body, settings);
-		widget.Render();
+
+		var body = document.getElementById("Scatter"); //*/document.body;
+		
+		try {
+			var chart = new ScatterChartApi(body, settings, data);
+
+			if (!chart.Render()) {
+				alert("Err0r");
+			}
+
+			var widget = chart.RenderCorrelation(body, settings);
+
+			if (!widget.Render()) {
+				alert("Err0r");
+			}
+		}
+		catch (err) {
+			alert("!!Uncaught Error :" + err.message);
+		}
 	</script>
 </body>
 </html>

@@ -1,3 +1,49 @@
+###04-Oct-2016
+
+Release time! Sweet!
+
+Supported browsers are now Edge, Chrome & Firefox on the latest versions. I have no interest in slowing down to accommodate other browsers.
+
+Alright so bug hunting has been completed since the last update. I had to make some surprising changes to get this to work.
+
+Vertical text only worked on Firefox.
+
+This is a strange one. The problem I was experiencing was due to the fact I was drawing the SVG incorrectly. Instead of setting everything to a percent it was better to set the viewbox to 100 by 100, omit the % and allow the graphic to be sized by the browser. Unfortunately this can result in stretching, however this has many more benefits.
+
+Incidentally the process of changing text sizes has become vastly simpler as a result, and I've cut out a function that handled the sizing of text.
+
+Somewhere in rendering the data is modified to be numeral rather than date based. This results in numeral refreshes.
+
+..I'm not proud of this.
+There was a function that was added in order to modify the input data. This would turn the arrays into date objects that would then be used throughout the object. Unfortunately this resulted in the core data being overwritten.
+
+Taking this out caused a host of problems. I firstly resolved this by creating the date objects as required, however the code for writing out the charts got complicated very quickly. 
+
+Finally I resolved this by moving all date calculation into a new function GetFilteredData(). This handles turning the arrays into date objects and orders the data is the axis is variable. This is also the more future-proof option, as I intend to start putting in data filters here eventually.
+Another handy feature is that it can total all the series up, ready for the comparison chart.
+
+Inconsistent X Axis can result in the first and last spokes not being black.
+
+Easy fix to change what the criteria of changing colour was.
+
+Comparison chart and correlation chart could not take dates.
+
+The comparison chart was fixed while playing with GetFilteredData() and the correlation chart now creates the date objects manually as needed.
+
+Hover-text is not well done on the comparison chart
+
+Essentially the chart would show the hover-text in the centre of the panels. This means that sometimes the mouse would go over it, causing it to flicker between states, and as it was stuck in the same place it was quite ugly.
+
+Hover-text is no longer SVG Drawn, it is now an  divider appended to the body of the document. There is a new event listener for mouse movements that moves the divider to the mouse position.
+This divider will only appear when the mouse is over something, so most of the time this will not take up any processing.
+This simplifies hover-text usage quite cleanly for the future.
+
+Finally some very minor changes:
+
+Title object is now in the widget API. 
+Validation has been added to the Widget's line function. I'll be adding more as they become useful.
+I have found issues that I do not think merit a fix right now. This includes problems that occur when the user has a silly input, problems that occur that a user can easily account for and problems on IE 11.
+
 ###28-Sep-16
 
 Wow, it's been a while.

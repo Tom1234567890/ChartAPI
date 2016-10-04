@@ -1,0 +1,5 @@
+BUG: Vertical text overlap not finished? (Not currently useful except for crowded series charts)
+BUG: Perportion chart cannot deal with negative values. (Why would this even be useful?!)
+BUG: No text present in IE11. (Who cares?)
+BUG: IE11 legend acting weird. (Who cares?)
+BUG: Chart axis going over 0 needs to be accounted for. (User can account by setting up their axis correctly)

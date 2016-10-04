@@ -10,16 +10,19 @@ function ChartApiWidget(p_element) {
 	this.g_data;
 	var g_sizeX = 400;
 	var g_sizeY = 400;
-	var g_strokeWidth = "1px";
+	var g_strokeWidth = 0.2;
 	var g_fontSuffix = "pt";
 	this.g_baseFont = "TimesNewRoman";
 
-	this.DEBUG = false;
+	this.DEBUG = true //*/ false;
 
 	try {
 		if (p_element.tagName.toLowerCase() == "svg") {
 			// Client has created the correct element
 			this.g_canvas = p_element;
+			// Make sure to set the view window!
+			this.g_canvas.setAttributeNS(null, "viewBox", "0 0 100 100");
+			this.g_canvas.setAttributeNS(null, "preserveAspectRatio", "none");
 			// Get Width & Height
 			var rect = this.g_canvas.getBoundingClientRect(); // get the bounding rectangle
 			g_sizeY = rect.height;
@@ -32,7 +35,8 @@ function ChartApiWidget(p_element) {
 				throw Error("Unable to generate canvas element");
 			}
 			// Set Height
-			this.g_canvas.setAttributeNS(null, "viewBox", "0 0 " + g_sizeX + " " + g_sizeY);
+			this.g_canvas.setAttributeNS(null, "viewBox", "0 0 100 100");
+			this.g_canvas.setAttributeNS(null, "preserveAspectRatio", "none");
 			this.g_canvas.setAttributeNS(null, "width", g_sizeX);
 			this.g_canvas.setAttributeNS(null, "height", g_sizeY);
 			// Add to document
@@ -44,6 +48,21 @@ function ChartApiWidget(p_element) {
 		// Error, but let the processes continue.
 		me.Alert("Error Creating Chart Object: " + ex.message, 3);
 	}
+
+
+	// #### Settings Objects ####
+
+
+	this.g_title =
+		{
+			// This reference is for the text directly, unlike the other references for the parent element.
+			reference: null,
+			text: "",
+			font: null,
+			background: "#FFFFFF",
+			fontSize: 5,
+			borderColor: "#000000"
+		}
 
 
 	// #### HTML Functions ####
@@ -63,10 +82,10 @@ function ChartApiWidget(p_element) {
 		}
 
 		var rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-		rect.setAttribute('x', p_minX + '%');
-		rect.setAttribute('y', p_minY + '%');
-		rect.setAttribute('width', p_maxX + '%');
-		rect.setAttribute('height', p_maxY + '%');
+		rect.setAttribute('x', p_minX);
+		rect.setAttribute('y', p_minY);
+		rect.setAttribute('width', p_maxX);
+		rect.setAttribute('height', p_maxY);
 		if (p_background != null) {
 			rect.setAttribute('fill', p_background);
 		}
@@ -89,11 +108,16 @@ function ChartApiWidget(p_element) {
 			p_parent = this.g_canvas;
 		}
 
+		// Validation
+		if (isNaN(p_x1) || isNaN(p_x2) || isNaN(p_y1) || isNaN(p_y2)) {
+			throw Error('Line input is not a number:\nX1 = ' + p_x1 + ',\nX2 = ' + p_x2 + ',\nY1 = ' + p_y1 + ',\nY2 = ' + p_y2);
+		}
+
 		var line = document.createElementNS("http://www.w3.org/2000/svg", "line");
-		line.setAttribute('x1', p_x1 + '%');
-		line.setAttribute('y1', p_y1 + '%');
-		line.setAttribute('x2', p_x2 + '%');
-		line.setAttribute('y2', p_y2 + '%');
+		line.setAttribute('x1', p_x1);
+		line.setAttribute('y1', p_y1);
+		line.setAttribute('x2', p_x2);
+		line.setAttribute('y2', p_y2);
 		line.setAttribute('stroke-width', g_strokeWidth);
 		line.setAttribute('stroke', p_lineColor);
 		p_parent.appendChild(line);
@@ -107,22 +131,26 @@ function ChartApiWidget(p_element) {
 		}
 
 		var line = document.createElementNS("http://www.w3.org/2000/svg", "line");
-		line.setAttribute('x1', p_x1 + '%');
-		line.setAttribute('y1', p_y1 + '%');
-		line.setAttribute('x2', p_x2 + '%');
-		line.setAttribute('y2', p_y2 + '%');
+		line.setAttribute('x1', p_x1);
+		line.setAttribute('y1', p_y1);
+		line.setAttribute('x2', p_x2);
+		line.setAttribute('y2', p_y2);
 		line.setAttribute('stroke-width', g_strokeWidth);
-		line.setAttribute('stroke-dasharray', "10,5");
+		line.setAttribute('stroke-dasharray', (g_strokeWidth * 20) + ', ' + (g_strokeWidth * 10));
 		line.setAttribute('stroke', p_lineColor);
 		p_parent.appendChild(line);
 	};
 
 	this.TextArea = function (p_parent, p_font, p_fontSize, p_isVertical, p_x, p_y) {
-		if (p_font == null || p_font == undefined) {
+		if (p_font == undefined || p_font == null) {
 			p_font = this.g_baseFont;
 		}
 
-		if (p_parent == null || p_parent == undefined) {
+		if (p_fontSize == undefined || p_fontSize == null) {
+			return;
+		}
+
+		if (p_parent == undefined || p_parent == null) {
 			p_parent = this.g_canvas;
 		}
 
@@ -132,8 +160,7 @@ function ChartApiWidget(p_element) {
 		text.setAttribute('font-size', p_fontSize + g_fontSuffix);
 
 		if (p_isVertical) {
-			text.setAttribute('transform', "rotate(270)");
-			text.setAttribute('style', 'transform-origin: ' + p_x + '% ' + p_y + '%')
+			text.setAttribute('transform', "rotate(270 " + p_x + ", " + p_y + ")");
 		}
 		return p_parent.appendChild(text);
 	};
@@ -156,8 +183,8 @@ function ChartApiWidget(p_element) {
 		// Create a new line at each point
 		for (var i = 0; i < message.length; i++) {
 			var text = document.createElementNS("http://www.w3.org/2000/svg", "tspan");
-			text.setAttribute('x', p_x + '%');
-			text.setAttribute('y', p_y + (i * p_spacing) + '%');
+			text.setAttribute('x', p_x);
+			text.setAttribute('y', p_y + (i * p_spacing));
 			text.setAttribute('text-anchor', 'middle');
 
 			text.innerHTML = message[i];
@@ -174,9 +201,9 @@ function ChartApiWidget(p_element) {
 		}
 
 		var circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-		circle.setAttribute('cx', p_x + '%');
-		circle.setAttribute('cy', p_y + '%');
-		circle.setAttribute('r', p_radius + '%');
+		circle.setAttribute('cx', p_x);
+		circle.setAttribute('cy', p_y);
+		circle.setAttribute('r', p_radius);
 
 		if (p_background != null) {
 			circle.setAttribute('fill', p_background);
@@ -291,6 +318,7 @@ function ChartApiWidget(p_element) {
 	};
 }
 
+
 // Base chart object
 // This is required to use any given chart
 
@@ -310,18 +338,19 @@ function BaseChartApi(p_element, p_settings, p_data) {
 	// Used to keep references of the legend background elements for hovering
 	var background = new Array();
 
+	// Get function to move 
+	var mousemove = function (e) {
+		if (hovertext == null) return;
+
+		var X = e.clientX + 12;
+		var Y = e.clientY;
+		hovertext.setAttribute("style", "position: fixed; top: " + Y + "px; left: " + X + "px; border: 1px solid black; background-color: white;");
+	}
+
+	me.Event(document, "mousemove", mousemove);
+
 	// #### Settings Objects ####
 
-	this.g_title =
-		{
-			// This reference is for the text directly, unlike the other references for the parent element.
-			reference: null,
-			text: "",
-			font: null,
-			background: "#FFFFFF",
-			fontSize: null,
-			borderColor: "#000000"
-		}
 	this.g_chartArea =
 		{
 			reference: null,
@@ -331,7 +360,7 @@ function BaseChartApi(p_element, p_settings, p_data) {
 			pointBorder: null,
 			altBackground: null,
 			yAxisDividers: 5,
-			truncation: 3,
+			truncation: 4,
 			minX: 0,
 			minY: 0,
 			maxX: 0,
@@ -342,8 +371,8 @@ function BaseChartApi(p_element, p_settings, p_data) {
 		{
 			reference: null,
 			text: "",
-			fontSize: null,
-			baseFontSize: null,
+			fontSize: 4,
+			baseFontSize: 3,
 			font: null,
 			background: "#FFFFFF",
 			titleBackground: null,
@@ -360,8 +389,8 @@ function BaseChartApi(p_element, p_settings, p_data) {
 		{
 			reference: null,
 			text: "",
-			fontSize: null,
-			baseFontSize: null,
+			fontSize: 4,
+			baseFontSize: 3,
 			font: null,
 			background: "#FFFFFF",
 			titleBackground: null,
@@ -381,38 +410,6 @@ function BaseChartApi(p_element, p_settings, p_data) {
 
 	// #### Functions ####
 
-
-	function SizeFonts() {
-		// #### Chart Font Sizes ####
-		var baseFontSize = me.g_size / 100;
-		// Title
-		if (me.g_title.fontSize == null || me.g_title.fontSize < 0) {
-			me.g_title.fontSize = 5 * baseFontSize;
-		}
-		// YAxis
-		if (me.g_yAxis.fontSize == null || me.g_yAxis.fontSize < 0) {
-			me.g_yAxis.fontSize = 4 * baseFontSize;
-		}
-		if (me.g_yAxis.baseFontSize == null || me.g_yAxis.baseFontSize < 0) {
-			me.g_yAxis.baseFontSize = 3 * baseFontSize;
-		}
-		// XAxis
-		if (me.g_xAxis.fontSize == null || me.g_xAxis.fontSize < 0) {
-			me.g_xAxis.fontSize = 4 * baseFontSize;
-		}
-		if (me.g_xAxis.baseFontSize == null || me.g_xAxis.baseFontSize < 0) {
-			me.g_xAxis.baseFontSize = 3 * baseFontSize;
-		}
-		// Legend
-		if (me.g_legend != undefined && me.g_legend != null) {
-			if (me.g_legend.fontSize == null || me.g_legend.fontSize < 0) {
-				me.g_legend.fontSize = 3 * baseFontSize;
-			}
-			if (me.g_legend.baseFontSize == null || me.g_legend.baseFontSize < 0) {
-				me.g_legend.baseFontSize = 2 * baseFontSize;
-			}
-		}
-	}
 
 	// Load in details from the input object
 	function LoadSettings() {
@@ -454,9 +451,9 @@ function BaseChartApi(p_element, p_settings, p_data) {
 					altBackground: p_settings.Legend.altBackground != undefined ? p_settings.Legend.altBackground : "#666666",
 					borderColor: p_settings.Legend.borderColor != undefined ? p_settings.Legend.borderColor : "#000000",
 					highlightColor: p_settings.Legend.highlightColor != undefined ? p_settings.Legend.highlightColor : "#888888",
+					fontSize: p_settings.Legend.fontSize != undefined ? p_settings.Legend.fontSize : 3,
 					names: p_settings.Legend.names,
-					fontSize: null,
-					baseFontSize: null,
+					baseFontSize: p_settings.Legend.baseFontSize != undefined ? p_settings.Legend.baseFontSize : 2,
 					minX: 0,
 					minY: 0,
 					maxX: 0,
@@ -503,24 +500,6 @@ function BaseChartApi(p_element, p_settings, p_data) {
 		// Title me.Text
 		var textArea = me.TextArea(null, me.g_title.font, me.g_title.fontSize, false);
 		me.g_title.reference = me.Text(textArea, 50, 10, me.g_title.text, 8);
-	}
-
-	// See if the X Axis is dated.
-	function CheckData() {
-		// Detect if we should construct a date
-		if (typeof (me.g_data[0][0]) == "object" && typeof (me.g_data[0][0][0]) == "number") {
-			try {
-				for (var i = 0; i < me.g_data[0].length; i++) {
-					// Create the date object
-					var d = new Date(me.g_data[0][i][0], me.g_data[0][i][1], me.g_data[0][i][2]);
-					// Replace the array with the date object
-					me.g_data[0][i] = d;
-				}
-			}
-			catch (ex) {
-				// Ignore
-			}
-		}
 	}
 
 	function DrawLegend() {
@@ -646,6 +625,7 @@ function BaseChartApi(p_element, p_settings, p_data) {
 		return true
 	};
 
+
 	// #### User Interfaces ####
 
 
@@ -666,10 +646,10 @@ function BaseChartApi(p_element, p_settings, p_data) {
 
 	// Create the chart
 	this.Render = function () {
-		if (this.DEBUG) {
-			console.group();
-			console.time("Chart API");
-		}
+		console.group(); // Indent console
+		// End timing
+		if (this.DEBUG) console.time("Chart API");
+		
 		me.Alert("#### Rendering Chart ####", 1);
 		try {
 			if (this.g_canvas == null || this.g_canvas == undefined) {
@@ -678,10 +658,8 @@ function BaseChartApi(p_element, p_settings, p_data) {
 
 			// Order in which the chart is rendered:
 			this.LoadChartData();
-			CheckData();
+			//CheckData();
 			LoadSettings();
-
-			SizeFonts();
 
 			me.Alert("#### Drawing Chart ####", 1);
 
@@ -690,20 +668,20 @@ function BaseChartApi(p_element, p_settings, p_data) {
 			if (DrawLegend()) me.Alert("Legend Rendered", 0);
 
 			me.Alert("#### Render Complete ####", 1);
-			if (this.DEBUG) {
-				console.timeEnd("Chart API");
-				console.groupEnd();
-			}
+
+			// End timing
+			if (this.DEBUG) console.timeEnd("Chart API");
+			console.groupEnd(); // End indentation
 			return true;
 		}
 		catch (ex) {
-			me.Alert("Stopped Rendering due to exception: " + ex.message, 3)
-			me.Alert("Line: " + ex.lineNumber, 0);
+			me.Alert("Stopped Rendering due to exception: " + ex.message, 4);
 			me.Alert(ex.stack, 0);
-			if (this.DEBUG) {
-				console.timeEnd("Chart API");
-				console.groupEnd();
-			}
+
+			// End timing
+			if (this.DEBUG) console.timeEnd("Chart API");
+			console.groupEnd(); // End indentation
+
 			if (this.g_canvas != null && this.g_canvas != undefined) {
 				this.Remove(true);
 				return false;
@@ -730,44 +708,8 @@ function BaseChartApi(p_element, p_settings, p_data) {
 	this.HoverText = function (e) {
 		// Get parameters
 		var clickValue = e.target.getAttribute('clickValue');
-		var X = e.target.getAttribute('cx');
-		var Y = e.target.getAttribute('cy');
-		// Remove '%'
-		if (X != null) {
-			X = parseInt(X.replace('%', ''), 10);
-		}
-		if (Y != null) {
-			Y = parseInt(Y.replace('%', ''), 10);
-		}
-		if (X == null) {
-			var minX = e.target.getAttribute('x');
-
-			if (false) {
-
-			} else {
-				var maxX = e.target.getAttribute('width');
-				var minY = e.target.getAttribute('y');
-				var maxY = e.target.getAttribute('height');
-
-				// Remove '%'
-				if (minX != null) {
-					minX = parseInt(minX.replace('%', ''), 10);
-				}
-				if (maxX != null) {
-					maxX = parseInt(maxX.replace('%', ''), 10);
-				}
-				if (minY != null) {
-					minY = parseInt(minY.replace('%', ''), 10);
-				}
-				if (maxY != null) {
-					maxY = parseInt(maxY.replace('%', ''), 10);
-				}
-				X = ((maxX) / 2) + minX;
-				Y = minY;
-			}
-		}
-
-		Y -= 4; // Ensure no mouse conflict
+		var X = e.clientX + 12;
+		var Y = e.clientY;
 
 		// If the hovertext already exists, remove the outdated one
 		if (hovertext != null) {
@@ -776,33 +718,13 @@ function BaseChartApi(p_element, p_settings, p_data) {
 		}
 
 		// Create our hovertext
-		hovertext = me.Group();
+		hovertext = document.createElement('div');
+		// Use CSS to position it ect
+		hovertext.setAttribute("style", "position: fixed; top: " + Y + "px; left: " + X + "px; border: 1px solid black; background-color: white;");
+		// Set text
+		hovertext.innerText = clickValue;
 
-		// Create bounding text area
-		var textarea = me.TextArea(hovertext, null, 12, false);
-		me.Text(textarea, X, Y, clickValue, 5);
-
-		// Get the dimentions of the canvas & 
-		var CanvasBoundingBox = me.g_canvas.getBoundingClientRect();
-		var BoundingBox = textarea.getBoundingClientRect();
-
-		// Create background element. Cannot use the base API as we are working with px.
-		var rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-		rect.setAttribute('x', (BoundingBox.left - CanvasBoundingBox.left) + 'px');
-		rect.setAttribute('y', (BoundingBox.top - CanvasBoundingBox.top) + 'px');
-		rect.setAttribute('width', BoundingBox.width + 'px');
-		rect.setAttribute('height', BoundingBox.height + 'px');
-		rect.setAttribute('fill', '#FFFFFF');
-		rect.setAttribute('stroke-width', '1px');
-		rect.setAttribute('stroke', '#000000');
-		hovertext.appendChild(rect);
-
-		// Delete the example text area, as it will not be visible.
-		textarea.remove();
-
-		// Create the actual text area
-		var textarea = me.TextArea(hovertext, null, 12, false);
-		me.Text(textarea, X, Y, clickValue, 5);
+		document.body.appendChild(hovertext);
 	};
 
 	// Hovertext finisher
@@ -813,6 +735,7 @@ function BaseChartApi(p_element, p_settings, p_data) {
 		}
 	};
 
+	// Respond to outside widgets settings the legend value
 	this.UpdateLegend = function (p_series) {
 		me.drawSeries = p_series;
 
@@ -830,7 +753,7 @@ function BaseChartApi(p_element, p_settings, p_data) {
 				background[i].setAttribute('fill', me.g_legend.highlightColor);
 			}
 		}
-	}
+	};
 
 	// Legend interactablility
 	this.LegendClick = function (e) {
@@ -838,6 +761,7 @@ function BaseChartApi(p_element, p_settings, p_data) {
 
 		me.drawSeries = clickValue;
 
+		me.LoadChartData();
 		me.RefreshChart();
 		me.RefreshCorrelation(me.drawSeries);
 
@@ -857,6 +781,75 @@ function BaseChartApi(p_element, p_settings, p_data) {
 	this.RefreshCorrelation = function () {
 		//Placeholder for chart types that do not support correlation
 		return false;
+	};
+
+	// Presents a neat data table for use by us
+	this.GetFilteredData = function (p_series) {
+		var categories = [];
+		var isVariableXAxis = typeof (me.g_data[0][0]) == "number" || (typeof (me.g_data[0][0]) == "object");
+		var isDate = (typeof (me.g_data[0][0]) == "object");
+		var sortedCategories = [];
+		var returningCategories = [];
+		var returningData = [];
+
+		if (isDate) {
+			var dateValues = [];
+
+			for (var i = 0; i < me.g_data[0].length; i++) {
+				// Create the date object
+				var d = new Date(me.g_data[0][i][0], me.g_data[0][i][1], me.g_data[0][i][2]);
+				dateValues[i] = d.valueOf();
+
+				categories[i] = d;
+			}
+
+			sortedCategories = dateValues.sort(function (a, b) { return a - b });
+		} else {
+			for (var i = 0; i < me.g_data[0].length; i++) {
+				categories[i] = me.g_data[0][i];
+			}
+
+			sortedCategories = categories.sort(function (a, b) { return a - b });
+		}
+
+		var data = new Array();
+		if (p_series == -1)
+		{
+			// Get the totals
+			for (var i = 1; i < this.g_data.length; i++) {
+				var sum = this.g_data[i].reduce(function (a, b) { return a + b });
+				data.push(sum);
+			}
+
+			categories = me.g_legend.names;
+			sortedCategories = me.g_legend.names;
+			var isVariableXAxis = typeof (sortedCategories[0]) == "number" || (typeof (sortedCategories[0]) == "object");
+			var isDate = (typeof (sortedCategories[0]) == "object");
+		}
+		else {
+			data = me.g_data[p_series];
+		}
+		
+		// TODO: Filtering
+
+		// Order the data
+		if (isVariableXAxis) {
+			for (var i = 0; i < sortedCategories.length; i++) {
+				var index = sortedCategories.indexOf(categories[i].valueOf());
+
+				returningCategories[i] = categories[index];
+
+				returningData[i] = data[index];
+			}
+		} else {
+			for (var i = 0; i < categories.length; i++) {
+				returningCategories[i] = categories[i];
+
+				returningData[i] = data[i];
+			}
+		}
+		returningCategories[0];
+		return [returningCategories, returningData, isVariableXAxis, isDate]
 	}
 };
 
