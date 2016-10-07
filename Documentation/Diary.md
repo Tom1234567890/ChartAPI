@@ -1,3 +1,19 @@
+###07-Oct-2016
+
+Next Sprint.
+
+The first feature to go into the new release will be component removal. This is a way to get rid of the part of the chart that are not needed (E.G. The title, the X Axis and Y axis).
+
+Secondly we introduce filtering. This is likely part of a widget, unless I figure out a way to do scrolling in SVG images. This will allow users to group the data up into a filter, for instance grouping T-shirts and shoes under clothing. This can also mean grouping up the different series.
+
+As opposed to the correlation widget, which is only implemented in Series charts, this will be global across all charts.
+
+The dev will be able to assign categories to the different series, and the user will be able to select these categories and filter down through them.
+
+Finally there will be a way for the post information to be read and written out by the chart. This will allow the user to quickly and easily share charts to other people.
+
+While this is only two features, this will change the inner workings of the charts and modify how future charts will interact with the base API. I think this will constitute as a full sprint.
+
 ###04-Oct-2016
 
 Release time! Sweet!
