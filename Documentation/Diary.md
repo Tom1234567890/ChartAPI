@@ -1,4 +1,16 @@
-###07-Oct-2016
+### 14-Mar-2017
+
+I have returned!
+
+I did write something poignant and meaningful, however I forgot to save. Here is the alternate lazy version. 
+
+I'm taking over again after accepting a job offer back in October. Unfortunately I couldn't juggle the two. 'Fortunately' I'll be leaving that job in two weeks time. I'll be picking back up on this project to keep myself busy. 
+
+I's daunting looking at my previous updates, however I look forward to being that productive again. 
+
+Changes in this update are to make individual elements of the chart removable, and to fix my terrible GitHub formatting. 
+
+### 07-Oct-2016
 
 Next Sprint.
 
@@ -14,7 +26,7 @@ Finally there will be a way for the post information to be read and written out 
 
 While this is only two features, this will change the inner workings of the charts and modify how future charts will interact with the base API. I think this will constitute as a full sprint.
 
-###04-Oct-2016
+### 04-Oct-2016
 
 Release time! Sweet!
 
@@ -60,7 +72,7 @@ Title object is now in the widget API.
 Validation has been added to the Widget's line function. I'll be adding more as they become useful.
 I have found issues that I do not think merit a fix right now. This includes problems that occur when the user has a silly input, problems that occur that a user can easily account for and problems on IE 11.
 
-###28-Sep-16
+### 28-Sep-16
 
 Wow, it's been a while.
 
@@ -136,7 +148,7 @@ Alright, that wraps up my first sprint. There is a host of bug's I'll be working
 
 Finally some somewhat arbitrary news. I'll be versioning these once I can figure out how to. Once the bugs have been fixed and a couple new charts are added this'll be version one. Yay!
 
-###12-Sep-16
+### 12-Sep-16
 
 Halfway!
 
@@ -152,7 +164,7 @@ So I've looked at the testing page to find absolutely nothing's changed. Yay.
 
 The nature of making architectural changes is that there is depressingly nothing afterwards to show off.
 
-###10-Sep-16
+### 10-Sep-16
 
 Spellchecked yesterdays entry... whoops.
 
@@ -237,7 +249,7 @@ I'm not entirely sold on this method – I can see the removal of disagreeing da
 
 All these changes will take a long time to complete, some more so than others, but by paying this technological debt now we can make a huge saving in the future. 
 
-###09-Sep-16
+### 09-Sep-16
 
 Code for the correlation widget has been completed.
 
@@ -257,7 +269,7 @@ For now I'll be checking in my changes as the scatter chart is finally polished 
 
 Incidentally there where two changes to the base object, all lines will now be 1px rather then 2px because it looks better, and there is an additional function to draw out dotted lines.
 
-###05-Sep-16
+### 05-Sep-16
 
 Alright, Epithany complete.
 
@@ -273,7 +285,7 @@ So I have created the scatter graph in order to begin this process. This took ab
 
 Next I've bumped the correlation widget upwards in the WorkList™ so that the scatter graph can work with it. At the moment the scatter graph will not be useful without it.
 
-###03-Sep-16
+### 03-Sep-16
 
 This update took a bit longer than anticipated. Not that it was particularly difficult, I've just been particularly busy. 
 
@@ -291,7 +303,7 @@ Finally I've realized that I've lost my way somewhat. While the base object is w
 
 Too much time has been spent on this project ad-hoc. I'll be seriously reconsidering the roadmap and how the charts thus far fit into it.
 
-###01-Sep-16
+### 01-Sep-16
 
 Sleepless but awesome, the refactor is complete.
 
@@ -317,7 +329,7 @@ I'll leave that till tomorrow, right now I need some sleep.
 
 Goodnight, 
 
-###31-Aug-16
+### 31-Aug-16
 Work has now finished on the line graph.
 
 This chart is not directly related to the vision in any meaningful way, however it does serve as a springboard for future development.

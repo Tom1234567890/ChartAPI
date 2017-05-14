@@ -71,19 +71,7 @@
 					titleBackground: "#FF9900",
 					dateFormat: "MM",
 					borderColor: "transparent"
-				}
-
-				,
-			Legend:
-				{
-					names: ["Cumulative\nMonths", "Months\nRemaining", "Value of\nMonth", "Days in\nMonth", "I like\nOranges"],
-					text: "Legend",
-					background: "lightGrey",
-					altBackground: "#ff9900",
-					borderColor: "Transparent",
-					highlightColor: "#9ECAE1"
-				}//*/
-			,
+				},
 			Formula:
 				{
 					font: null,
@@ -120,6 +108,17 @@
 				]
 		];
 
+		var settings;
+		var leg = 
+		{
+			names: ["Cumulative\nMonths", "Months\nRemaining", "Value of\nMonth", "Days in\nMonth", "I like\nOranges"],
+			text: "Legend",
+			background: "lightGrey",
+			altBackground: "#ff9900",
+			borderColor: "Transparent",
+			highlightColor: "#9ECAE1"
+		}
+
 		var body = document.getElementById("Line"); //*/document.body;
 
 		try {
@@ -128,6 +127,8 @@
 			if (!chart.Render()) {
 				alert("Err0r");
 			}
+
+			settings.Legend = leg;
 
 			var widget = chart.RenderCorrelation(body, settings);
 
@@ -139,6 +140,7 @@
 			alert("!!Uncaught Error :" + err.message);
 		}
 
+		settings.Legend = null;
 		var body = document.getElementById("Scatter"); //*/document.body;
 		
 		try {
@@ -147,6 +149,8 @@
 			if (!chart.Render()) {
 				alert("Err0r");
 			}
+
+			settings.Legend = leg;
 
 			var widget = chart.RenderCorrelation(body, settings);
 

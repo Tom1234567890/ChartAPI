@@ -48,7 +48,6 @@ function ChartApiCorrelaitonWidget(p_categories, p_element, p_settings, p_parent
 	this.g_correlation =
 		{
 			reference: null,
-			color: ["#000000"],
 			font: null,
 			background: "#FFFFFF",
 			borderColor: "#000000",
@@ -64,7 +63,8 @@ function ChartApiCorrelaitonWidget(p_categories, p_element, p_settings, p_parent
 
 
 	function LoadSettings() {
-		if (p_settings == undefined && p_settings == null) {
+		if (p_settings == undefined || p_settings == null ||
+			p_settings.ChartArea == undefined || p_settings.ChartArea == null) {
 			me.Alert("No Settings Received", 3);
 			return;
 		}
@@ -83,28 +83,28 @@ function ChartApiCorrelaitonWidget(p_categories, p_element, p_settings, p_parent
 			if (p_settings.ChartArea.yAxisDividers != undefined) me.g_chartArea.yAxisDividers = p_settings.ChartArea.yAxisDividers;
 			if (p_settings.ChartArea.truncation != undefined) me.g_chartArea.truncation = p_settings.ChartArea.truncation;
 			if (p_settings.ChartArea.borderColor != undefined) me.g_chartArea.borderColor = p_settings.ChartArea.borderColor;
-		}
+		} else me.g_chartArea == null;
 		if (p_settings.Title != undefined) {
 			me.Alert("Title Received", 0);
 			if (p_settings.Title.text != undefined) me.g_title.text = p_settings.Title.text;
 			if (p_settings.Title.font != undefined) me.g_title.font = p_settings.Title.font;
 			if (p_settings.Title.background != undefined) me.g_title.background = p_settings.Title.background;
 			if (p_settings.Title.borderColor != undefined) me.g_title.borderColor = p_settings.Title.borderColor;
-		}
+		} else me.g_title = null;
 		if (p_settings.Formula != undefined) {
 			me.Alert("Formula Received", 0);
 			if (p_settings.Formula.font != undefined) me.g_formula.font = p_settings.Formula.font;
 			if (p_settings.Formula.background != undefined) me.g_formula.background = p_settings.Formula.background;
 			if (p_settings.Formula.fontSize != undefined) me.g_formula.fontSize = p_settings.Formula.fontSize;
 			if (p_settings.Formula.borderColor != undefined) me.g_formula.borderColor = p_settings.Formula.borderColor;
-		}
+		} else me.g_formula = null;
 		if (p_settings.Correlation != undefined) {
 			me.Alert("Correlation Received", 0);
 			if (p_settings.Correlation.font != undefined) me.g_correlation.font = p_settings.Correlation.font;
 			if (p_settings.Correlation.background != undefined) me.g_correlation.background = p_settings.Correlation.background;
 			if (p_settings.Correlation.fontSize != undefined) me.g_correlation.fontSize = p_settings.Correlation.fontSize;
 			if (p_settings.Correlation.borderColor != undefined) me.g_correlation.borderColor = p_settings.Correlation.borderColor;
-		}
+		} else me.g_correlation = null;
 		if (p_settings.Legend != undefined && p_settings.Legend.names != undefined) {
 			me.Alert("Legend Received", 0);
 			me.g_legend =
@@ -128,21 +128,29 @@ function ChartApiCorrelaitonWidget(p_categories, p_element, p_settings, p_parent
 
 	function SizeWidget() {
 		// #### Formula ####
-		me.g_formula.minX = 0;
-		me.g_formula.minY = 20;
-		me.g_formula.maxX = 80;
-		me.g_formula.maxY = 40;
-		if (me.g_legend == undefined) {
-			me.g_formula.maxX += 20;
+		if (me.g_formula != undefined) {
+			me.g_formula.minX = 0;
+			me.g_formula.minY = 20;
+			me.g_formula.maxX = 80;
+			me.g_formula.maxY = 40;
 		}
+		
 		// #### Correlation ####
-		me.g_correlation.minX = 0;
-		me.g_correlation.minY = 60;
-		me.g_correlation.maxX = 80;
-		me.g_correlation.maxY = 40;
-		if (me.g_legend == undefined) {
-			me.g_correlation.maxX += 20;
+		if (me.g_correlation != undefined) {
+			me.g_correlation.minX = 0;
+			me.g_correlation.minY = 60;
+			me.g_correlation.maxX = 80;
+			me.g_correlation.maxY = 40;
+			if (me.g_formula == undefined) {
+				me.g_correlation.minY -= 40;
+				me.g_correlation.maxY += 40;
+			}
+		} else {
+			if (me.g_formula != undefined) {
+				me.g_formula.maxY += 40;
+			}
 		}
+
 		// #### Legend ####
 		if (me.g_legend != undefined) {
 			// Dimentions
@@ -150,6 +158,36 @@ function ChartApiCorrelaitonWidget(p_categories, p_element, p_settings, p_parent
 			me.g_legend.minY = 20;
 			me.g_legend.maxX = 20;
 			me.g_legend.maxY = 80;
+		} else {
+			if (me.g_formula != undefined) {
+				me.g_formula.maxX += 20;
+			}
+			if (me.g_correlation != undefined) {
+				me.g_correlation.maxX += 20;
+			}
+		}
+
+		// ### Title ###
+		if (me.g_title == null) {
+			if (me.g_legend != undefined) {
+				me.g_legend.minY -= 20;
+				me.g_legend.maxY += 20;
+			}
+			if (me.g_formula != null && me.g_correlation != null) {
+				me.g_formula.minY -= 20;
+				me.g_formula.maxY += 10;
+				me.g_correlation.minY -= 10;
+				me.g_correlation.maxY += 10;
+			} else {
+				if (me.g_formula != null) {
+					me.g_formula.minY -= 20;
+					me.g_formula.maxY += 20;
+				}
+				if (me.g_correlation != null) {
+					me.g_correlation.minY -= 20;
+					me.g_correlation.maxY += 20;
+				}
+			}
 		}
 	};
 
@@ -160,6 +198,7 @@ function ChartApiCorrelaitonWidget(p_categories, p_element, p_settings, p_parent
 		me.Rect(me.g_canvas, 0, 0, 100, 100,
 			me.g_chartArea.canvasBackground, me.g_chartArea.borderColor);
 		// #### Title ####
+		if (me.g_title == null) return;
 		me.Rect(me.g_canvas, 0, 0, 100, 20,
 			me.g_title.background, me.g_title.borderColor);
 		// Title me.Text
@@ -199,7 +238,7 @@ function ChartApiCorrelaitonWidget(p_categories, p_element, p_settings, p_parent
 			me.g_legend.minX,
 			me.g_legend.minY,
 			me.g_legend.maxX,
-			me.g_legend.maxY * ((me.g_results.length + 1) / 8),
+			me.g_legend.maxY / (me.g_results.length + 1),
 			me.g_legend.background,
 			me.g_legend.borderColor);
 		// Legend Alt Background Hovering Element
@@ -208,7 +247,7 @@ function ChartApiCorrelaitonWidget(p_categories, p_element, p_settings, p_parent
 				me.g_legend.minX,
 				me.g_legend.minY,
 				me.g_legend.maxX,
-				me.g_legend.maxY / 8,
+				me.g_legend.maxY / (me.g_results.length + 1),
 				me.g_legend.altBackground,
 				me.g_legend.borderColor)
 			);
@@ -225,7 +264,7 @@ function ChartApiCorrelaitonWidget(p_categories, p_element, p_settings, p_parent
 			me.g_legend.minX,
 			me.g_legend.minY,
 			me.g_legend.maxX,
-			me.g_legend.maxY / 8,
+			me.g_legend.maxY / (me.g_results.length + 1),
 			null,
 			null);
 
@@ -242,9 +281,9 @@ function ChartApiCorrelaitonWidget(p_categories, p_element, p_settings, p_parent
 			background.push(me.Rect(
 				me.g_legend.reference,
 				me.g_legend.minX,
-				me.g_legend.minY + ((i + 1) * (me.g_legend.maxY / 8)),
+				me.g_legend.minY + ((i + 1) * (me.g_legend.maxY / (me.g_results.length + 1))),
 				me.g_legend.maxX,
-				me.g_legend.maxY / 8,
+				me.g_legend.maxY / (me.g_results.length + 1),
 				me.g_legend.highlightColor,
 				me.g_legend.borderColor));
 
@@ -255,14 +294,14 @@ function ChartApiCorrelaitonWidget(p_categories, p_element, p_settings, p_parent
 
 			me.Text(textArea,
 				me.g_legend.minX + (me.g_legend.maxX / 2),
-				me.g_legend.minY + ((i + 1.6) * (me.g_legend.maxY / 8)),
+				me.g_legend.minY + ((i + 1.6) * (me.g_legend.maxY / (me.g_results.length + 1))),
 				me.g_legend.names[i]);
 
 			var pointBorder = me.g_chartArea.pointBorder == null || me.g_chartArea.pointBorder[i] == null ? me.g_chartArea.color[i] : me.g_chartArea.pointBorder[i];
 
 			me.Circle(me.g_legend.reference,
 				me.g_legend.minX + (me.g_legend.maxX / 2),
-				me.g_legend.minY + ((i + 1.2) * (me.g_legend.maxY / 8)),
+				me.g_legend.minY + ((i + 1.2) * (me.g_legend.maxY / (me.g_results.length + 1))),
 				0.75,
 				me.g_chartArea.color[i],
 				pointBorder);
@@ -270,9 +309,9 @@ function ChartApiCorrelaitonWidget(p_categories, p_element, p_settings, p_parent
 			var Listener = me.Rect(
 				me.g_legend.reference,
 				me.g_legend.minX,
-				me.g_legend.minY + ((i + 1) * (me.g_legend.maxY / 8)),
+				me.g_legend.minY + ((i + 1) * (me.g_legend.maxY / (me.g_results.length + 1))),
 				me.g_legend.maxX,
-				me.g_legend.maxY / 8,
+				me.g_legend.maxY / (me.g_results.length + 1),
 				null,
 				null);
 
@@ -291,6 +330,7 @@ function ChartApiCorrelaitonWidget(p_categories, p_element, p_settings, p_parent
 	};
 
 	function DrawFormula() {
+		if (me.g_formula == null) return false;
 		if (me.g_formula.reference != null) {
 			me.g_formula.reference.remove(); me.Alert("Formula Removed", 0);
 		}
@@ -311,9 +351,12 @@ function ChartApiCorrelaitonWidget(p_categories, p_element, p_settings, p_parent
 		// Formula Text
 		var textArea = me.TextArea(me.g_formula.reference, me.g_formula.font, me.g_formula.fontSize, false);
 		me.Text(textArea, me.g_formula.minX + (me.g_formula.maxX / 2), me.g_formula.minY + (me.g_formula.maxY / 2), me.g_results[series][2]);
+
+		return true;
 	};
 
 	function DrawCorrelation() {
+		if (me.g_correlation == null) return false;
 		if (me.g_correlation.reference != null) {
 			me.g_correlation.reference.remove(); me.Alert("Correlation Removed", 0);
 		}
@@ -358,6 +401,8 @@ function ChartApiCorrelaitonWidget(p_categories, p_element, p_settings, p_parent
 			me.g_correlation.minY + (me.g_correlation.maxY / 2),
 			text,
 			8);
+
+		return true;
 	};
 
 	// #### User Interfaces ####
@@ -368,8 +413,8 @@ function ChartApiCorrelaitonWidget(p_categories, p_element, p_settings, p_parent
 
 		drawSeries = clickValue
 
-		DrawFormula(); me.Alert("Formula Rendered", 0);
-		DrawCorrelation(); me.Alert("Correlation Rendered", 0);
+		if (DrawFormula()) me.Alert("Formula Rendered", 0);
+		if (DrawCorrelation()) me.Alert("Correlation Rendered", 0);
 
 		for (var i = 0; i < background.length; i++) {
 			var value = i == 0 ? -1 : i;
@@ -527,7 +572,7 @@ function ChartApiCorrelaitonWidget(p_categories, p_element, p_settings, p_parent
 		console.group(); // Indent console
 		// End timing
 		if (this.DEBUG) console.time("Chart API");
-		me.Alert("#### Rendering Widget ####", 1);
+		me.Alert("#### Rendering Correlation Widget ####", 1);
 		try {
 			if (this.g_canvas == null || this.g_canvas == undefined) {
 				me.Alert("Unable to create chart - no parent element", 3);
@@ -540,8 +585,8 @@ function ChartApiCorrelaitonWidget(p_categories, p_element, p_settings, p_parent
 
 			DrawBaseAreas(); me.Alert("Title Rendered", 0);
 			if (DrawLegend()) me.Alert("Legend Rendered", 0);
-			DrawFormula(); me.Alert("Formula Rendered", 0);
-			DrawCorrelation(); me.Alert("Correlation Rendered", 0);
+			if (DrawFormula()) me.Alert("Formula Rendered", 0);
+			if (DrawCorrelation()) me.Alert("Correlation Rendered", 0);
 
 			me.Alert("#### Render Complete ####", 1);
 			
@@ -582,8 +627,8 @@ function ChartApiCorrelaitonWidget(p_categories, p_element, p_settings, p_parent
 	this.Update = function (p_series) {
 		drawSeries = p_series;
 
-		DrawFormula(); me.Alert("Formula Rendered", 0);
-		DrawCorrelation(); me.Alert("Correlation Rendered", 0);
+		if (DrawFormula()) me.Alert("Formula Rendered", 0);
+		if (DrawCorrelation()) me.Alert("Correlation Rendered", 0);
 
 		//Update legend
 		for (var i = 0; i < background.length; i++) {

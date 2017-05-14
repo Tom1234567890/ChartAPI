@@ -14,26 +14,21 @@ function ComparisonChartApi(p_element, p_settings, p_data) {
 
 	// Set's out proportions of the chart & draws areas around the chart.
 	function SizeChart() {
-		// #### YAxis ####
-		me.g_yAxis.minX = 00;
-		me.g_yAxis.minY = 80;
-		me.g_yAxis.maxX = 80;
-		me.g_yAxis.maxY = 20;
-		if (me.g_legend == undefined) {
-			me.g_yAxis.maxX += 20;
-		}
-
 		// #### Chart Area ####
 		me.g_chartArea.minX = 03;
 		me.g_chartArea.minY = 23;
 		me.g_chartArea.maxX = 74;
 		me.g_chartArea.maxY = 54;
-		if (me.g_legend == undefined) {
-			me.g_chartArea.maxX += 20;
-		}
 
-		// #### Chart Font Sizes ####
-		var baseFontSize = me.g_size / 100;
+		// #### YAxis ####
+		if (me.g_yAxis != null) {
+			me.g_yAxis.minX = 00;
+			me.g_yAxis.minY = 80;
+			me.g_yAxis.maxX = 80;
+			me.g_yAxis.maxY = 20;
+		} else {
+			me.g_chartArea.maxY += 20;
+		}
 
 		// #### Legend ####
 		if (me.g_legend != undefined) {
@@ -42,29 +37,38 @@ function ComparisonChartApi(p_element, p_settings, p_data) {
 			me.g_legend.minY = 20;
 			me.g_legend.maxX = 20;
 			me.g_legend.maxY = 80;
-			// Font Sizes
-			if (me.g_legend.fontSize == null || me.g_legend.fontSize < 0) {
-				me.g_legend.fontSize = 3 * baseFontSize;
+		} else {
+			me.g_chartArea.maxX += 20;
+			me.g_yAxis.maxX += 20;
+		}
+
+		if (me.g_title == null) {
+			if (me.g_legend != undefined) {
+				me.g_legend.minY -= 20;
+				me.g_legend.maxY += 20;
 			}
-			if (me.g_legend.baseFontSize == null || me.g_legend.baseFontSize < 0) {
-				me.g_legend.baseFontSize = 2 * baseFontSize;
-			}
+			me.g_chartArea.minY -= 20;
+			me.g_chartArea.maxY += 20;
 		}
 	};
 
 	function DrawYAxis() {
-		// XAxis Reference
+		// #### YAxis ####
+		if (me.g_yAxis == null) return false;
+		// YAxis Reference
 		me.g_yAxis.reference = me.Group();
-		// XAxis Area
+		// YAxis Area
 		me.Rect(me.g_yAxis.reference, me.g_yAxis.minX, me.g_yAxis.minY, me.g_yAxis.maxX, me.g_yAxis.maxY, me.g_yAxis.background, me.g_yAxis.borderColor);
-		// XAxis Alt Background
+		// YAxis Alt Background
 		me.Rect(me.g_yAxis.reference, me.g_yAxis.minX, me.g_yAxis.minY + (me.g_yAxis.maxY / 2), me.g_yAxis.maxX, me.g_yAxis.maxY / 2, me.g_yAxis.titleBackground, me.g_yAxis.borderColor);
-		// XAxis me.Text
+		// YAxis me.Text
 		var textArea = me.TextArea(me.g_yAxis.reference, me.g_yAxis.font, me.g_yAxis.fontSize, false);
 		me.Text(textArea,
 			me.g_yAxis.minX + (me.g_yAxis.maxX / 2),
 			me.g_yAxis.minY + (me.g_yAxis.maxY * (7 / 8)),
 			me.g_yAxis.text);
+
+		return true;
 	};
 
 	function DrawChartContainer() {
@@ -115,12 +119,11 @@ function ComparisonChartApi(p_element, p_settings, p_data) {
 		}
 	};
 
-
 	// Higher level function used to draw out the chart.
 	this.BaseDrawChart = function () {
 		SizeChart();
 
-		DrawYAxis(); me.Alert("YAxis Rendered", 0);
+		if (DrawYAxis()) me.Alert("YAxis Rendered", 0);
 		DrawChartContainer(); me.Alert("Chart Container Rendered", 0);
 
 		// Function used by each child chart.
@@ -183,22 +186,19 @@ function ProportionChartApi(p_element, p_settings, p_data) {
 		var colorNumber = p_series - 1;
 
 		var x = me.g_chartArea.minX;
-		var prevText = null;
 
 		var textChain = [];
 
-		for (var i = 0; i < categories.length; i++) {
+		for (var i = 0; i < data.length; i++) {
 			// Draw Area
-			var x2 = (data[i] / me.g_yAxis.max) * me.g_chartArea.maxX;
+			var x2 = (data[i] / me.maxY) * me.g_chartArea.maxX;
 			var spokeX = x + (x2 / 2);
-
 			var theColor;
 			if (me.drawSeries == -1) {
 				theColor = me.g_chartArea.color[i];
 			} else {
 				theColor = me.g_chartArea.color[colorNumber];
 			}
-
 			var rect = me.Rect(
 				me.g_chartArea.reference,
 				x,
@@ -223,6 +223,11 @@ function ProportionChartApi(p_element, p_settings, p_data) {
 				rect.setAttribute('legendValue', i + 1);
 			}
 
+			x = x + x2;
+
+			// Y Axis Spokes
+			if (me.g_yAxis == null) continue;
+
 			var textArea = textChain[textChain.length] = me.TextArea(
 				me.g_chartArea.reference, // Use g_chartArea reference for the refresh
 				me.g_yAxis.font,
@@ -232,7 +237,7 @@ function ProportionChartApi(p_element, p_settings, p_data) {
 				me.g_yAxis.minY + (me.g_yAxis.maxY / 4));
 
 			// Ensure we only get 5 characters. /,/g replaces all instances of ,
-			var text = +((data[i] / me.g_yAxis.max) * 100).toFixed(0);
+			var text = +((data[i] / me.maxY) * 100).toFixed(0);
 			text += '%';
 
 			text = me.Text(textArea,
@@ -246,34 +251,18 @@ function ProportionChartApi(p_element, p_settings, p_data) {
 				spokeX,
 				me.g_yAxis.minY + 1,
 				me.g_yAxis.spokeColor);
-
-			x = x + x2;
-			prevText = textArea;
 		}
-
-		me.TextChain(textChain, false);
+		if (me.g_yAxis != null && me.g_legend != null)	me.TextChain(textChain, false);
 	};
 
 	// Function used to plot Proportion chart's
 	this.DrawChart = function () {
+
 		// Modify the Max
+		var TotalData = me.GetFilteredData(this.drawSeries)[1];
 
-
-		var data = new Array();
-
-		if (this.drawSeries == -1) {
-			for (var i = 1; i < this.g_data.length; i++) {
-				var sum = this.g_data[i].reduce(function (a, b) { return a + b });
-				data.push(sum);
-			}
-		}
-		else {
-			data = this.g_data[this.drawSeries];
-		}
-
-		var max = data.reduce((pv, cv) => pv + cv, 0);
-		me.g_yAxis.max = max;
-
+		var max = TotalData.reduce((pv, cv) => pv + cv, 0);
+		me.maxY = max;
 
 		DrawSeries(this.drawSeries);
 	};

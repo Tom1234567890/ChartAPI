@@ -62,7 +62,7 @@ function ChartApiWidget(p_element) {
 			background: "#FFFFFF",
 			fontSize: 5,
 			borderColor: "#000000"
-		}
+		};
 
 
 	// #### HTML Functions ####
@@ -337,6 +337,9 @@ function BaseChartApi(p_element, p_settings, p_data) {
 	this.drawSeries = -1;
 	// Used to keep references of the legend background elements for hovering
 	var background = new Array();
+	// Used in chart calculation
+	this.minY;
+	this.maxY;
 
 	// Get function to move 
 	var mousemove = function (e) {
@@ -377,8 +380,6 @@ function BaseChartApi(p_element, p_settings, p_data) {
 			background: "#FFFFFF",
 			titleBackground: null,
 			spokeColor: "#808080",
-			min: 0,
-			max: 0,
 			minX: 0,
 			minY: 0,
 			maxX: 0,
@@ -395,10 +396,7 @@ function BaseChartApi(p_element, p_settings, p_data) {
 			background: "#FFFFFF",
 			titleBackground: null,
 			spokeColor: "#808080",
-			spacing: 0,
 			dateFormat: "DD-MM-YYYY",
-			min: null,
-			max: null,
 			minX: 0,
 			minY: 0,
 			maxX: 0,
@@ -413,15 +411,18 @@ function BaseChartApi(p_element, p_settings, p_data) {
 
 	// Load in details from the input object
 	function LoadSettings() {
-		if (p_settings == undefined && p_settings == null) {
+		if (p_settings == undefined || p_settings == null
+			|| p_settings.ChartArea == undefined || p_settings.ChartArea == null) {
 			me.Alert("No Settings Received", 3);
 			return;
 		}
+
 		me.Alert("Receiving Settings:", 1);
 		if (p_settings.BaseFont != undefined) {
 			me.Alert("Base Font Received", 0);
 			me.g_baseFont = p_settings.BaseFont;
 		}
+
 		if (p_settings.Title != undefined) {
 			me.Alert("Title Received", 0);
 			if (p_settings.Title.text != undefined) me.g_title.text = p_settings.Title.text;
@@ -429,6 +430,8 @@ function BaseChartApi(p_element, p_settings, p_data) {
 			if (p_settings.Title.background != undefined) me.g_title.background = p_settings.Title.background;
 			if (p_settings.Title.borderColor != undefined) me.g_title.borderColor = p_settings.Title.borderColor;
 		}
+		else me.g_title = null;
+
 		if (p_settings.ChartArea != undefined) {
 			me.Alert("ChartArea Received", 0);
 			if (p_settings.ChartArea.canvasBackground != undefined) me.g_chartArea.canvasBackground = p_settings.ChartArea.canvasBackground;
@@ -441,6 +444,7 @@ function BaseChartApi(p_element, p_settings, p_data) {
 			if (p_settings.ChartArea.truncation != undefined) me.g_chartArea.truncation = p_settings.ChartArea.truncation;
 			if (p_settings.ChartArea.borderColor != undefined) me.g_chartArea.borderColor = p_settings.ChartArea.borderColor;
 		}
+		
 		if (p_settings.Legend != undefined && p_settings.Legend.names != undefined) {
 			me.Alert("Legend Received", 0);
 			me.g_legend =
@@ -460,12 +464,13 @@ function BaseChartApi(p_element, p_settings, p_data) {
 					maxY: 0
 				}
 		}
+
 		if (p_settings.YAxis != undefined) {
 			me.Alert("YAxis Received", 0);
 			if (p_settings.YAxis.text != undefined) me.g_yAxis.text = p_settings.YAxis.text;
 			if (p_settings.YAxis.font != undefined) me.g_yAxis.font = p_settings.YAxis.font;
-			if (p_settings.YAxis.min != undefined) me.g_yAxis.min = p_settings.YAxis.min;
-			if (p_settings.YAxis.max != undefined) me.g_yAxis.max = p_settings.YAxis.max;
+			if (p_settings.YAxis.min != undefined) me.minY = p_settings.YAxis.min;
+			if (p_settings.YAxis.max != undefined) me.maxY = p_settings.YAxis.max;
 			if (p_settings.YAxis.background != undefined) me.g_yAxis.background = p_settings.YAxis.background;
 			if (p_settings.YAxis.fontSize != undefined) me.g_yAxis.fontSize = p_settings.YAxis.fontSize;
 			if (p_settings.YAxis.baseFontSize != undefined) me.g_yAxis.baseFontSize = p_settings.YAxis.baseFontSize;
@@ -473,6 +478,8 @@ function BaseChartApi(p_element, p_settings, p_data) {
 			if (p_settings.YAxis.spokeColor != undefined) me.g_yAxis.spokeColor = p_settings.YAxis.spokeColor;
 			if (p_settings.YAxis.borderColor != undefined) me.g_yAxis.borderColor = p_settings.YAxis.borderColor;
 		}
+		else me.g_yAxis = null;
+
 		if (p_settings.XAxis != undefined) {
 			me.Alert("XAxis Received", 0);
 			if (p_settings.XAxis.text != undefined) me.g_xAxis.text = p_settings.XAxis.text;
@@ -485,6 +492,7 @@ function BaseChartApi(p_element, p_settings, p_data) {
 			if (p_settings.XAxis.spokeColor != undefined) me.g_xAxis.spokeColor = p_settings.XAxis.spokeColor;
 			if (p_settings.XAxis.borderColor != undefined) me.g_xAxis.borderColor = p_settings.XAxis.borderColor;
 		}
+		else me.g_xAxis = null;
 	}
 
 	// Draw out the title & background
@@ -495,6 +503,7 @@ function BaseChartApi(p_element, p_settings, p_data) {
 		me.Rect(me.g_canvas, 0, 0, 100, 100,
 			me.g_chartArea.canvasBackground, me.g_chartArea.borderColor);
 		// #### Title ####
+		if (me.g_title == null) return;
 		me.Rect(me.g_canvas, 0, 0, 100, 20,
 			me.g_title.background, me.g_title.borderColor);
 		// Title me.Text
@@ -534,7 +543,7 @@ function BaseChartApi(p_element, p_settings, p_data) {
 			me.g_legend.minX,
 			me.g_legend.minY,
 			me.g_legend.maxX,
-			me.g_legend.maxY * (me.g_data.length / 8),
+			me.g_legend.maxY / me.g_data.length,
 			me.g_legend.background,
 			me.g_legend.borderColor);
 		// Legend Alt Background Hovering Element
@@ -543,7 +552,7 @@ function BaseChartApi(p_element, p_settings, p_data) {
 				me.g_legend.minX,
 				me.g_legend.minY,
 				me.g_legend.maxX,
-				me.g_legend.maxY / 8,
+				me.g_legend.maxY / me.g_data.length,
 				me.g_legend.altBackground,
 				me.g_legend.borderColor)
 			);
@@ -553,14 +562,14 @@ function BaseChartApi(p_element, p_settings, p_data) {
 		var textArea = me.TextArea(me.g_legend.reference, me.g_legend.font, me.g_legend.fontSize, false);
 		me.Text(textArea,
 			me.g_legend.minX + (me.g_legend.maxX / 2),
-			me.g_legend.minY + (me.g_legend.maxY / 16),
+			me.g_legend.minY + (me.g_legend.maxY / (me.g_data.length * 2)),
 			me.g_legend.text);
 		// Legend Alt Background Mouse Event Handlers
 		var Listener = me.Rect(me.g_legend.reference,
 			me.g_legend.minX,
 			me.g_legend.minY,
 			me.g_legend.maxX,
-			me.g_legend.maxY / 8,
+			me.g_legend.maxY / me.g_data.length,
 			null,
 			null);
 
@@ -578,9 +587,9 @@ function BaseChartApi(p_element, p_settings, p_data) {
 			background.push(me.Rect(
 				me.g_legend.reference,
 				me.g_legend.minX,
-				me.g_legend.minY + ((i + 1) * (me.g_legend.maxY / 8)),
+				me.g_legend.minY + ((i + 1) * (me.g_legend.maxY / me.g_data.length)),
 				me.g_legend.maxX,
-				me.g_legend.maxY / 8,
+				me.g_legend.maxY / me.g_data.length,
 				me.g_legend.highlightColor,
 				me.g_legend.borderColor));
 
@@ -591,14 +600,14 @@ function BaseChartApi(p_element, p_settings, p_data) {
 
 			me.Text(textArea,
 				me.g_legend.minX + (me.g_legend.maxX / 2),
-				me.g_legend.minY + ((i + 1.6) * (me.g_legend.maxY / 8)),
+				me.g_legend.minY + ((i + 1.6) * (me.g_legend.maxY / me.g_data.length)),
 				me.g_legend.names[i]);
 
 			var pointBorder = me.g_chartArea.pointBorder == null || me.g_chartArea.pointBorder[i] == null ? me.g_chartArea.color[i] : me.g_chartArea.pointBorder[i];
 
 			me.Circle(me.g_legend.reference,
 				me.g_legend.minX + (me.g_legend.maxX / 2),
-				me.g_legend.minY + ((i + 1.2) * (me.g_legend.maxY / 8)),
+				me.g_legend.minY + ((i + 1.2) * (me.g_legend.maxY / me.g_data.length)),
 				0.75,
 				me.g_chartArea.color[i],
 				pointBorder);
@@ -606,9 +615,9 @@ function BaseChartApi(p_element, p_settings, p_data) {
 			var Listener = me.Rect(
 				me.g_legend.reference,
 				me.g_legend.minX,
-				me.g_legend.minY + ((i + 1) * (me.g_legend.maxY / 8)),
+				me.g_legend.minY + ((i + 1) * (me.g_legend.maxY / me.g_data.length)),
 				me.g_legend.maxX,
-				me.g_legend.maxY / 8,
+				me.g_legend.maxY / me.g_data.length,
 				null,
 				null);
 
@@ -792,24 +801,41 @@ function BaseChartApi(p_element, p_settings, p_data) {
 		var returningCategories = [];
 		var returningData = [];
 
-		if (isDate) {
-			var dateValues = [];
-
-			for (var i = 0; i < me.g_data[0].length; i++) {
-				// Create the date object
-				var d = new Date(me.g_data[0][i][0], me.g_data[0][i][1], me.g_data[0][i][2]);
-				dateValues[i] = d.valueOf();
-
-				categories[i] = d;
+		// Categories
+		if (p_series == -1) {
+			if (me.g_legend != null) {
+				categories = me.g_legend.names;
+				sortedCategories = me.g_legend.names;
+				var isVariableXAxis = typeof (sortedCategories[0]) == "number" || typeof (sortedCategories[0]) == "object";
+				var isDate = (typeof (sortedCategories[0]) == "object");
+			} else {
+				// Remove the categories
+				for (var i = 0; i < categories.length; i++) {
+					categories[i] = "";
+					sortedCategories[i] = "";
+				}
 			}
+		}
+		else {
+			if (isDate) {
+				var dateValues = [];
 
-			sortedCategories = dateValues.sort(function (a, b) { return a - b });
-		} else {
-			for (var i = 0; i < me.g_data[0].length; i++) {
-				categories[i] = me.g_data[0][i];
+				for (var i = 0; i < me.g_data[0].length; i++) {
+					// Create the date object
+					var d = new Date(me.g_data[0][i][0], me.g_data[0][i][1], me.g_data[0][i][2]);
+					dateValues[i] = d.valueOf();
+
+					categories[i] = d;
+				}
+
+				sortedCategories = dateValues.sort(function (a, b) { return a - b });
+			} else {
+				for (var i = 0; i < me.g_data[0].length; i++) {
+					categories[i] = me.g_data[0][i];
+				}
+
+				sortedCategories = categories.sort(function (a, b) { return a - b });
 			}
-
-			sortedCategories = categories.sort(function (a, b) { return a - b });
 		}
 
 		var data = new Array();
@@ -820,18 +846,12 @@ function BaseChartApi(p_element, p_settings, p_data) {
 				var sum = this.g_data[i].reduce(function (a, b) { return a + b });
 				data.push(sum);
 			}
-
-			categories = me.g_legend.names;
-			sortedCategories = me.g_legend.names;
-			var isVariableXAxis = typeof (sortedCategories[0]) == "number" || (typeof (sortedCategories[0]) == "object");
-			var isDate = (typeof (sortedCategories[0]) == "object");
 		}
 		else {
 			data = me.g_data[p_series];
 		}
-		
 		// TODO: Filtering
-
+		
 		// Order the data
 		if (isVariableXAxis) {
 			for (var i = 0; i < sortedCategories.length; i++) {
@@ -842,13 +862,12 @@ function BaseChartApi(p_element, p_settings, p_data) {
 				returningData[i] = data[index];
 			}
 		} else {
-			for (var i = 0; i < categories.length; i++) {
+			for (var i = 0; i < data.length; i++) {
 				returningCategories[i] = categories[i];
 
 				returningData[i] = data[i];
 			}
 		}
-		returningCategories[0];
 		return [returningCategories, returningData, isVariableXAxis, isDate]
 	}
 };
